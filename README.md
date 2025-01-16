@@ -2,11 +2,16 @@
 <img src="https://www.tools4ever.nl/connector-logos/sap-logo.png" width="256px">
 
 # Data Tables
-- SAP_User
+- Parameter
+- Profile
+- Role
+- User
+- UserParameters
+- UserProfiles
+- UserRoles
 
 # Actions
-- SAP_User
-    - Create/Update/Delete 
+TBD
  
 # NIM Docs
 The official NIM documentation can be found at: https://docs.nimsuite.com
