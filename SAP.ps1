@@ -280,6 +280,16 @@ $Global:Properties = @{
         @{ displayName = 'FLAG_COLL'; name='FLAG_COLL'; options = @('default') }
         @{ displayName = 'TEXT'; name='TEXT'; options = @('default') }
     )
+    ProfileHT = [System.Collections.ArrayList]@()
+    Profile = @(
+        @{ displayName = 'PROFN'; name='PROFN'; options = @('default','key') }
+        @{ displayName = 'TYP'; name='TYP'; options = @('default') }
+    )
+    ParameterHT = [System.Collections.ArrayList]@()
+    Parameter = @(
+        @{ displayName = 'PARAMID'; name='PARAMID'; options = @('default','key') }
+        @{ displayName = 'PARTEXT'; name='PARTEXT'; options = @('default') }
+    )
 }
 
 $Global:Properties.User | ForEach-Object { $Global:Properties.UserHT.Add([PSCustomObject]$_) > $null }
@@ -292,6 +302,10 @@ $Global:Properties.UserProfile | ForEach-Object { $Global:Properties.UserProfile
 $Global:Properties.UserProfileHT = $Global:Properties.UserProfileHT | Group-Object name -AsHashTable
 $Global:Properties.Role | ForEach-Object { $Global:Properties.RoleHT.Add([PSCustomObject]$_) > $null }
 $Global:Properties.RoleHT = $Global:Properties.RoleHT | Group-Object name -AsHashTable
+$Global:Properties.Profile | ForEach-Object { $Global:Properties.ProfileHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.ProfileHT = $Global:Properties.ProfileHT | Group-Object name -AsHashTable
+$Global:Properties.Parameter | ForEach-Object { $Global:Properties.ParameterHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.ParameterHT = $Global:Properties.ParameterHT | Group-Object name -AsHashTable
 
 $Global:User = [System.Collections.ArrayList]@()
 $Global:UserRole = [System.Collections.ArrayList]@()
@@ -670,7 +684,7 @@ function Idm-RoleRead {
 
         $bapiFunctionCall.Invoke($Global:Connection)
         [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('ROLES')
-        
+
         foreach($row in $returnData) {
             $table_obj = @{}
             foreach($prop in $row) {
@@ -678,6 +692,110 @@ function Idm-RoleRead {
             }
             [PSCustomObject]$table_obj
         } 
+    }
+
+    Log info "Done"
+}
+
+function Idm-ProfileRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "Profile"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.ProfileHT[$_].displayName }
+        
+        Log info "Retrieving Profile List"
+        $ret = Read-Table -destination $Global:Connection -QueryTable "USR10" -Fields $properties
+        
+        foreach($item in $ret) {
+            $obj = @{}
+            foreach($prop in $item.PSObject.Properties) {
+                $obj[($Global:Properties.ProfileHT[$prop.Name]).displayName] = $prop.Value
+            }
+            [PSCustomObject]$obj
+        }
+    }
+
+    Log info "Done"
+}
+
+function Idm-ParameterRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "Parameter"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.ParameterHT[$_].displayName }
+        
+        Log info "Retrieving Parameter List"
+        $ret = Read-Table -destination $Global:Connection -QueryTable "TPARA" -Fields $properties
+        
+        foreach($item in $ret) {
+            $obj = @{}
+            foreach($prop in $item.PSObject.Properties) {
+                $obj[($Global:Properties.ParameterHT[$prop.Name]).displayName] = $prop.Value
+            }
+            [PSCustomObject]$obj
+        }
     }
 
     Log info "Done"
@@ -769,4 +887,106 @@ function Get-ClassMetaData {
             value = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
         }
     )
+}
+
+Function Read-Table {
+    param (
+        [parameter(Mandatory = $true)]$destination,
+        [parameter(Mandatory = $true)]$QueryTable,
+        [parameter(Mandatory = $false)]$Delimiter = ";",
+        [parameter(Mandatory = $false)][System.Collections.ArrayList]$Options,
+        [parameter(Mandatory = $false)][String[]]$Fields
+    )
+    
+    try {
+        $repository = $destination.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$bapiReadRfcTable = $repository.CreateFunction("RFC_READ_TABLE")
+        [SAP.Middleware.Connector.IRfcTable]$SAPOptions = $bapiReadRfcTable.GetTable("OPTIONS")
+        [SAP.Middleware.Connector.IRfcTable]$SAPFields = $bapiReadRfcTable.GetTable("FIELDS")
+        $bapiReadRfcTable.SetValue("QUERY_TABLE", $QueryTable)
+        $bapiReadRfcTable.SetValue("DELIMITER", $Delimiter)
+
+        if ($null -ne $Fields) {
+            foreach ($line in $Fields) {
+                $SAPFields.Append()
+                $SAPFields.SetValue("FIELDNAME", $line) 
+            }
+        }     
+
+        if ($null -ne $Options) {
+            foreach ($line in $Options) {
+                $SAPOptions.Append()
+                $SAPOptions.SetValue("TEXT", $line.TEXT) 
+            }
+        }     
+        
+        $bapiReadRfcTable.Invoke($destination)
+
+        $sap_fields = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$FIELDS = $bapiReadRfcTable.GetTable("FIELDS")
+        foreach ($record in $FIELDS) {
+            $row = [PSCustomObject]@{
+                "FIELDNAME"  = $record.GetValue("FIELDNAME")
+                "TYPE"  = $record.GetValue("TYPE")
+            }
+            $sap_fields.Add($row) > $null
+        }
+        $header = "";
+        foreach ($line in $sap_fields) {
+            $header = $header + $line.FIELDNAME + ";"
+        }
+        $header = $header.TrimEnd(";");
+
+        $sap_table = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$DATA = $bapiReadRfcTable.GetTable("DATA")
+        $firstrow = $true
+        foreach ($record in $DATA) {
+            $row = [PSCustomObject]@{
+                "WA"  = $record.GetValue("WA")
+            }
+            $sap_table.Add($row) > $null
+        }
+        $output = [System.Collections.Generic.List[PSCustomObject]]::new()
+        foreach ($line in $sap_table.wa) {
+            if ($firstrow -eq $true)
+            {
+                $sap_table.Add($row) > $null
+                $firstrow = $false
+                $output.Add([PSCustomObject]@{
+                    column  = $header
+                })
+            }
+            $array = $line.Split(";") 
+            $line = $array.trim() -join ";"
+            $output.Add([PSCustomObject]@{
+                column  = $line
+            })
+        }
+        $sap_table = ConvertFrom-Csv -Delimiter ";" -InputObject $output.column
+
+        foreach ($row in $sap_table) {
+            foreach ($sapfield in $sap_fields) {
+                $val = $row."$($sapfield.FIELDNAME)"
+                if ($sapfield.TYPE -eq "D")
+                {
+                    if ($val -eq "00000000") {
+                        $val = $null
+                    }
+                    else {
+                        $val = [datetime]::ParseExact($val, 'yyyyMMdd', $null)
+                    }
+                }
+                $row."$($sapfield.FIELDNAME)" = $val
+            }
+        }
+    }
+    catch {
+        $msg = "Could not get the content of $($QueryTable), message: $($_.Exception.Message)"
+        Log error $msg
+        throw $msg
+    }
+    finally {
+        Write-Output $sap_table
+    }
+
 }
