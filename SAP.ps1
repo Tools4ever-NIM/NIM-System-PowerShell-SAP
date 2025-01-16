@@ -1,7 +1,7 @@
 # SAP.ps1 - SAP
 
 $Log_MaskableKeys = @(
-    
+    "password"
 )
 
 # System functions
@@ -114,145 +114,154 @@ function Idm-OnUnload {
 #
 
 $Global:Properties = @{
-    SAP_User = @(
-        @{ displayName = "Username"; name = "USERNAME"; options = @('default','key') }    
-        @{ displayName = "account_id"; area = "LOGONDATA"; name = "ACCNT"; options = @() }
-        @{ displayName = ""; area = ""; name = "ADDR_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "ADR_NOTES"; options = @() }
-        @{ displayName = ""; area = ""; name = "BCODE"; options = @() }
-        @{ displayName = ""; area = ""; name = "BIRTH_NAME"; options = @() }
-        @{ displayName = "building"; area = "ADDRESS"; name = "BUILDING"; options = @() }
-        @{ displayName = ""; area = ""; name = "BUILDING_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "BUILD_LONG"; options = @() }
-        @{ displayName = ""; area = ""; name = "CATTKENNZ"; options = @() }
-        @{ displayName = ""; area = ""; name = "CHCKSTATUS"; options = @() }
-        @{ displayName = "city"; area = "ADDRESS"; name = "CITY"; options = @() }
-        @{ displayName = ""; area = ""; name = "CITY_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "CLASS"; options = @() }
-        @{ displayName = ""; area = ""; name = "CODVC"; options = @() }
-        @{ displayName = ""; area = ""; name = "CODVN"; options = @() }
-        @{ displayName = ""; area = ""; name = "CODVS"; options = @() }
-        @{ displayName = ""; area = ""; name = "COMM_TYPE"; options = @() }
-        @{ displayName = ""; area = ""; name = "COUNTRY"; options = @() }
-        @{ displayName = ""; area = ""; name = "COUNTRYISO"; options = @() }
-        @{ displayName = ""; area = ""; name = "COUNTY"; options = @() }
-        @{ displayName = ""; area = ""; name = "COUNTY_CODE"; options = @() }
-        @{ displayName = ""; area = ""; name = "C_O_NAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "DATFM"; options = @() }
-        @{ displayName = ""; area = ""; name = "DCPFM"; options = @() }
-        @{ displayName = ""; area = ""; name = "DELIV_DIS"; options = @() }
-        @{ displayName = ""; area = ""; name = "DELI_SERV_NUMBER"; options = @() }
-        @{ displayName = ""; area = ""; name = "DELI_SERV_TYPE"; options = @() }
-        @{ displayName = "department"; area = "ADDRESS"; name = "DEPARTMENT"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "DISTRCT_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "DISTRICT"; options = @() }
-        @{ displayName = ""; area = ""; name = "DONT_USE_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "DONT_USE_S"; options = @() }
-        @{ displayName = ""; area = ""; name = "E_MAIL"; options = @() }
-        @{ displayName = "facsimile_extension"; area = "ADDRESS"; name = "FAX_EXTENS"; options = @('default') }
-        @{ displayName = "facsimile_number"; area = "ADDRESS"; name = "FAX_NUMBER"; options = @('default') }
-        @{ displayName = "first_name"; area = "ADDRESS"; name = "FIRSTNAME"; options = @('default') }
-        @{ displayName = "floor"; area = "ADDRESS"; name = "FLOOR"; options = @() }
-        @{ displayName = ""; area = ""; name = "FLOOR_P"; options = @() }
-        @{ displayName = "full_name"; area = "ADDRESS"; name = "FULLNAME"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "FULLNAME_X"; options = @() }
-        @{ displayName = "function"; area = "ADDRESS"; name = "FUNCTION"; options = @() }
-        @{ displayName = ""; area = ""; name = "GLOBAL_LOCK_STATE"; options = @('default') }
-        @{ displayName = "vaild_to"; area = "LOGONDATA"; name = "GLTGB"; options = @() }
-        @{ displayName = "valid_from"; area = "LOGONDATA"; name = "GLTGV"; options = @() }
-        @{ displayName = "scn_permit_sap_gui_checkbox"; area = "SNC"; name = "GUIFLAG"; options = @() }
-        @{ displayName = ""; area = ""; name = "HOMECITYNO"; options = @() }
-        @{ displayName = ""; area = ""; name = "HOME_CITY"; options = @() }
-        @{ displayName = "house"; area = "ADDRESS"; name = "HOUSE_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "HOUSE_NO2"; options = @() }
-        @{ displayName = ""; area = ""; name = "HOUSE_NO3"; options = @() }
-        @{ displayName = ""; area = ""; name = "INHOUSE_ML"; options = @() }
-        @{ displayName = "initials"; area = "ADDRESS"; name = "INITIALS"; options = @() }
-        @{ displayName = ""; area = ""; name = "INITS_SIG"; options = @() }
-        @{ displayName = "cost_center"; area = "DEFAULTS"; name = "KOSTL"; options = @('default') }
-        @{ displayName = "language"; area = "DEFAULTS"; name = "LANGU"; options = @() }
-        @{ displayName = ""; area = ""; name = "LANGUCPISO"; options = @() }
-        @{ displayName = ""; area = ""; name = "LANGUP_ISO"; options = @() }
-        @{ displayName = ""; area = ""; name = "LANGU_CR_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "LANGU_ISO"; options = @() }
-        @{ displayName = ""; area = ""; name = "LANGU_P"; options = @() }
-        @{ displayName = "last_name"; area = "ADDRESS"; name = "LASTNAME"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "LOCAL_LOCK_STATE"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "LOCATION"; options = @() }
-        @{ displayName = ""; area = ""; name = "LOCK_STATE"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "LTIME"; options = @() }
-        @{ displayName = "middle_name"; area = "ADDRESS"; name = "MIDDLENAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAMCOUNTRY"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAMEFORMAT"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAME_2"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAME_3"; options = @() }
-        @{ displayName = ""; area = ""; name = "NAME_4"; options = @() }
-        @{ displayName = ""; area = ""; name = "NICKNAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "NO_PASSWORD_LOCK_STATE"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "PASSCODE"; options = @() }
-        @{ displayName = ""; area = ""; name = "PBOXCIT_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "PCODE1_EXT"; options = @() }
-        @{ displayName = ""; area = ""; name = "PCODE2_EXT"; options = @() }
-        @{ displayName = ""; area = ""; name = "PCODE3_EXT"; options = @() }
-        @{ displayName = ""; area = ""; name = "PERS_NO"; options = @() }
-        @{ displayName = "secure_network_communication"; area = "SNC"; name = "PNAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "POBOX_CTRY"; options = @() }
-        @{ displayName = "postal_code"; area = "ADDRESS"; name = "POSTL_COD1"; options = @() }
-        @{ displayName = ""; area = ""; name = "POSTL_COD2"; options = @() }
-        @{ displayName = ""; area = ""; name = "POSTL_COD3"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_BOX"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_BOX_CIT"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_BOX_LOBBY"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_BOX_REG"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_CTRYISO"; options = @() }
-        @{ displayName = ""; area = ""; name = "PO_W_O_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "PREFIX1"; options = @() }
-        @{ displayName = ""; area = ""; name = "PREFIX2"; options = @() }
-        @{ displayName = ""; area = ""; name = "PWDSALTEDHASH"; options = @() }
-        @{ displayName = ""; area = ""; name = "REGIOGROUP"; options = @() }
-        @{ displayName = ""; area = ""; name = "REGION"; options = @() }
-        @{ displayName = "room_number"; area = "ADDRESS"; name = "ROOM_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "ROOM_NO_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "SECONDNAME"; options = @() }
-        @{ displayName = ""; area = ""; name = "SECURITY_POLICY"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "SORT1"; options = @() }
-        @{ displayName = ""; area = ""; name = "SORT1_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "SORT2"; options = @() }
-        @{ displayName = ""; area = ""; name = "SORT2_P"; options = @() }
-        @{ displayName = "delete_after_output"; area = "DEFAULTS"; name = "SPDA"; options = @() }
-        @{ displayName = "output_immediately"; area = "DEFAULTS"; name = "SPDB"; options = @() }
-        @{ displayName = "spool_output_service"; area = "DEFAULTS"; name = "SPLD"; options = @() }
-        @{ displayName = ""; area = ""; name = "SPLG"; options = @() }
-        @{ displayName = ""; area = ""; name = "START_MENU"; options = @() }
-        @{ displayName = ""; area = ""; name = "STCOD"; options = @() }
-        @{ displayName = "street"; area = "ADDRESS"; name = "STREET"; options = @() }
-        @{ displayName = ""; area = ""; name = "STREET_NO"; options = @() }
-        @{ displayName = ""; area = ""; name = "STR_ABBR"; options = @() }
-        @{ displayName = ""; area = ""; name = "STR_SUPPL1"; options = @() }
-        @{ displayName = ""; area = ""; name = "STR_SUPPL2"; options = @() }
-        @{ displayName = ""; area = ""; name = "STR_SUPPL3"; options = @() }
-        @{ displayName = ""; area = ""; name = "TAXJURCODE"; options = @() }
-        @{ displayName = "telephone_extension"; area = "ADDRESS"; name = "TEL1_EXT"; options = @() }
-        @{ displayName = "telephone_number"; area = "ADDRESS"; name = "TEL1_NUMBR"; options = @() }
-        @{ displayName = ""; area = ""; name = "TIMEFM"; options = @() }
-        @{ displayName = ""; area = ""; name = "TIME_ZONE"; options = @() }
-        @{ displayName = ""; area = ""; name = "TITLE"; options = @() }
-        @{ displayName = ""; area = ""; name = "TITLE_ACA1"; options = @() }
-        @{ displayName = ""; area = ""; name = "TITLE_ACA2"; options = @() }
-        @{ displayName = ""; area = ""; name = "TITLE_P"; options = @() }
-        @{ displayName = ""; area = ""; name = "TITLE_SPPL"; options = @() }
-        @{ displayName = ""; area = ""; name = "TOWNSHIP"; options = @() }
-        @{ displayName = ""; area = ""; name = "TOWNSHIP_CODE"; options = @() }
-        @{ displayName = ""; area = ""; name = "TRANSPZONE"; options = @() }
-        @{ displayName = ""; area = ""; name = "TZONE"; options = @() }
-        @{ displayName = ""; area = ""; name = "USTYP"; options = @() }
-        @{ displayName = ""; area = ""; name = "WRONG_LOGON_LOCK_STATE"; options = @('default') }
-        @{ displayName = ""; area = ""; name = "XPCPT"; options = @() }
+    User = @(
+        @{ displayName = 'Username'; area = 'ADDRESS'; name='USERNAME'; options = @('default','key') }
+        @{ displayName = 'account_id'; area = 'LOGONDATA'; name='ACCNT'; options = @('default') }
+        @{ displayName = 'ADDR_NO'; area = 'ADDRESS'; name='ADDR_NO'; options = @() }
+        @{ displayName = 'ADR_NOTES'; area = 'ADDRESS'; name='ADR_NOTES'; options = @() }
+        @{ displayName = 'BCODE'; area = 'LOGONDATA'; name='BCODE'; options = @() }
+        @{ displayName = 'BIRTH_NAME'; area = 'ADDRESS'; name='BIRTH_NAME'; options = @() }
+        @{ displayName = 'building'; area = 'ADDRESS'; name='BUILDING'; options = @('default') }
+        @{ displayName = 'BUILDING_P'; area = 'ADDRESS'; name='BUILDING_P'; options = @() }
+        @{ displayName = 'BUILD_LONG'; area = 'ADDRESS'; name='BUILD_LONG'; options = @() }
+        @{ displayName = 'CATTKENNZ'; area = 'DEFAULTS'; name='CATTKENNZ'; options = @() }
+        @{ displayName = 'CHCKSTATUS'; area = 'ADDRESS'; name='CHCKSTATUS'; options = @() }
+        @{ displayName = 'city'; area = 'ADDRESS'; name='CITY'; options = @('default') }
+        @{ displayName = 'CITY_NO'; area = 'ADDRESS'; name='CITY_NO'; options = @() }
+        @{ displayName = 'CLASS'; area = 'LOGONDATA'; name='CLASS'; options = @() }
+        @{ displayName = 'CODVC'; area = 'LOGONDATA'; name='CODVC'; options = @() }
+        @{ displayName = 'CODVN'; area = 'LOGONDATA'; name='CODVN'; options = @() }
+        @{ displayName = 'CODVS'; area = 'LOGONDATA'; name='CODVS'; options = @() }
+        @{ displayName = 'COMM_TYPE'; area = 'ADDRESS'; name='COMM_TYPE'; options = @() }
+        @{ displayName = 'COUNTRY'; area = 'ADDRESS'; name='COUNTRY'; options = @() }
+        @{ displayName = 'COUNTRYISO'; area = 'ADDRESS'; name='COUNTRYISO'; options = @() }
+        @{ displayName = 'COUNTY'; area = 'ADDRESS'; name='COUNTY'; options = @() }
+        @{ displayName = 'COUNTY_CODE'; area = 'ADDRESS'; name='COUNTY_CODE'; options = @() }
+        @{ displayName = 'C_O_NAME'; area = 'ADDRESS'; name='C_O_NAME'; options = @() }
+        @{ displayName = 'DATFM'; area = 'DEFAULTS'; name='DATFM'; options = @() }
+        @{ displayName = 'DCPFM'; area = 'DEFAULTS'; name='DCPFM'; options = @() }
+        @{ displayName = 'DELIV_DIS'; area = 'ADDRESS'; name='DELIV_DIS'; options = @() }
+        @{ displayName = 'DELI_SERV_NUMBER'; area = 'ADDRESS'; name='DELI_SERV_NUMBER'; options = @() }
+        @{ displayName = 'DELI_SERV_TYPE'; area = 'ADDRESS'; name='DELI_SERV_TYPE'; options = @() }
+        @{ displayName = 'department'; area = 'ADDRESS'; name='DEPARTMENT'; options = @('default') }
+        @{ displayName = 'DISTRCT_NO'; area = 'ADDRESS'; name='DISTRCT_NO'; options = @() }
+        @{ displayName = 'DISTRICT'; area = 'ADDRESS'; name='DISTRICT'; options = @() }
+        @{ displayName = 'DONT_USE_P'; area = 'ADDRESS'; name='DONT_USE_P'; options = @() }
+        @{ displayName = 'DONT_USE_S'; area = 'ADDRESS'; name='DONT_USE_S'; options = @() }
+        @{ displayName = 'E_MAIL'; area = 'ADDRESS'; name='E_MAIL'; options = @() }
+        @{ displayName = 'facsimile_extension'; area = 'ADDRESS'; name='FAX_EXTENS'; options = @('default') }
+        @{ displayName = 'facsimile_number'; area = 'ADDRESS'; name='FAX_NUMBER'; options = @('default') }
+        @{ displayName = 'first_name'; area = 'ADDRESS'; name='FIRSTNAME'; options = @('default') }
+        @{ displayName = 'floor'; area = 'ADDRESS'; name='FLOOR'; options = @() }
+        @{ displayName = 'FLOOR_P'; area = 'ADDRESS'; name='FLOOR_P'; options = @() }
+        @{ displayName = 'full_name'; area = 'ADDRESS'; name='FULLNAME'; options = @('default') }
+        @{ displayName = 'FULLNAME_X'; area = 'ADDRESS'; name='FULLNAME_X'; options = @() }
+        @{ displayName = 'function'; area = 'ADDRESS'; name='FUNCTION'; options = @() }
+        @{ displayName = 'GLOBAL_LOCK_STATE'; area = 'ISLOCKED'; name='GLOBAL_LOCK_STATE'; options = @('default') }
+        @{ displayName = 'vaild_to'; area = 'LOGONDATA'; name='GLTGB'; options = @('default') }
+        @{ displayName = 'valid_from'; area = 'LOGONDATA'; name='GLTGV'; options = @('default') }
+        @{ displayName = 'scn_permit_sap_gui_checkbox'; area = 'SNC'; name='GUIFLAG'; options = @('default') }
+        @{ displayName = 'HOMECITYNO'; area = 'ADDRESS'; name='HOMECITYNO'; options = @() }
+        @{ displayName = 'HOME_CITY'; area = 'ADDRESS'; name='HOME_CITY'; options = @() }
+        @{ displayName = 'house'; area = 'ADDRESS'; name='HOUSE_NO'; options = @('default') }
+        @{ displayName = 'HOUSE_NO2'; area = 'ADDRESS'; name='HOUSE_NO2'; options = @() }
+        @{ displayName = 'HOUSE_NO3'; area = 'ADDRESS'; name='HOUSE_NO3'; options = @() }
+        @{ displayName = 'INHOUSE_ML'; area = 'ADDRESS'; name='INHOUSE_ML'; options = @() }
+        @{ displayName = 'initials'; area = 'ADDRESS'; name='INITIALS'; options = @('default') }
+        @{ displayName = 'INITS_SIG'; area = 'ADDRESS'; name='INITS_SIG'; options = @() }
+        @{ displayName = 'cost_center'; area = 'DEFAULTS'; name='KOSTL'; options = @('default') }
+        @{ displayName = 'language'; area = 'ADDRESS'; name='LANGU'; options = @('default') }
+        @{ displayName = 'LANGUCPISO'; area = 'ADDRESS'; name='LANGUCPISO'; options = @() }
+        @{ displayName = 'LANGUP_ISO'; area = 'ADDRESS'; name='LANGUP_ISO'; options = @() }
+        @{ displayName = 'LANGU_CR_P'; area = 'ADDRESS'; name='LANGU_CR_P'; options = @() }
+        @{ displayName = 'LANGU_ISO'; area = 'ADDRESS'; name='LANGU_ISO'; options = @() }
+        @{ displayName = 'LANGU_P'; area = 'ADDRESS'; name='LANGU_P'; options = @() }
+        @{ displayName = 'last_name'; area = 'ADDRESS'; name='LASTNAME'; options = @('default') }
+        @{ displayName = 'LOCAL_LOCK_STATE'; area = 'ISLOCKED'; name='LOCAL_LOCK_STATE'; options = @('default') }
+        @{ displayName = 'LOCATION'; area = 'ADDRESS'; name='LOCATION'; options = @() }
+        @{ displayName = 'LOCK_STATE'; area = 'ISLOCKED'; name='LOCK_STATE'; options = @('default') }
+        @{ displayName = 'LTIME'; area = 'LOGONDATA'; name='LTIME'; options = @() }
+        @{ displayName = 'middle_name'; area = 'ADDRESS'; name='MIDDLENAME'; options = @('default') }
+        @{ displayName = 'NAMCOUNTRY'; area = 'ADDRESS'; name='NAMCOUNTRY'; options = @() }
+        @{ displayName = 'NAME'; area = 'ADDRESS'; name='NAME'; options = @() }
+        @{ displayName = 'NAMEFORMAT'; area = 'ADDRESS'; name='NAMEFORMAT'; options = @() }
+        @{ displayName = 'NAME_2'; area = 'ADDRESS'; name='NAME_2'; options = @() }
+        @{ displayName = 'NAME_3'; area = 'ADDRESS'; name='NAME_3'; options = @() }
+        @{ displayName = 'NAME_4'; area = 'ADDRESS'; name='NAME_4'; options = @() }
+        @{ displayName = 'NICKNAME'; area = 'ADDRESS'; name='NICKNAME'; options = @() }
+        @{ displayName = 'NO_PASSWORD_LOCK_STATE'; area = 'ISLOCKED'; name='NO_PASSWORD_LOCK_STATE'; options = @('default') }
+        @{ displayName = 'PASSCODE'; area = 'LOGONDATA'; name='PASSCODE'; options = @() }
+        @{ displayName = 'PBOXCIT_NO'; area = 'ADDRESS'; name='PBOXCIT_NO'; options = @() }
+        @{ displayName = 'PCODE1_EXT'; area = 'ADDRESS'; name='PCODE1_EXT'; options = @() }
+        @{ displayName = 'PCODE2_EXT'; area = 'ADDRESS'; name='PCODE2_EXT'; options = @() }
+        @{ displayName = 'PCODE3_EXT'; area = 'ADDRESS'; name='PCODE3_EXT'; options = @() }
+        @{ displayName = 'PERS_NO'; area = 'ADDRESS'; name='PERS_NO'; options = @() }
+        @{ displayName = 'secure_network_communication'; area = 'SNC'; name='PNAME'; options = @('default') }
+        @{ displayName = 'POBOX_CTRY'; area = 'ADDRESS'; name='POBOX_CTRY'; options = @() }
+        @{ displayName = 'postal_code'; area = 'ADDRESS'; name='POSTL_COD1'; options = @('default') }
+        @{ displayName = 'POSTL_COD2'; area = 'ADDRESS'; name='POSTL_COD2'; options = @() }
+        @{ displayName = 'POSTL_COD3'; area = 'ADDRESS'; name='POSTL_COD3'; options = @() }
+        @{ displayName = 'PO_BOX'; area = 'ADDRESS'; name='PO_BOX'; options = @() }
+        @{ displayName = 'PO_BOX_CIT'; area = 'ADDRESS'; name='PO_BOX_CIT'; options = @() }
+        @{ displayName = 'PO_BOX_LOBBY'; area = 'ADDRESS'; name='PO_BOX_LOBBY'; options = @() }
+        @{ displayName = 'PO_BOX_REG'; area = 'ADDRESS'; name='PO_BOX_REG'; options = @() }
+        @{ displayName = 'PO_CTRYISO'; area = 'ADDRESS'; name='PO_CTRYISO'; options = @() }
+        @{ displayName = 'PO_W_O_NO'; area = 'ADDRESS'; name='PO_W_O_NO'; options = @() }
+        @{ displayName = 'PREFIX1'; area = 'ADDRESS'; name='PREFIX1'; options = @() }
+        @{ displayName = 'PREFIX2'; area = 'ADDRESS'; name='PREFIX2'; options = @() }
+        @{ displayName = 'PWDSALTEDHASH'; area = 'LOGONDATA'; name='PWDSALTEDHASH'; options = @() }
+        @{ displayName = 'REGIOGROUP'; area = 'ADDRESS'; name='REGIOGROUP'; options = @() }
+        @{ displayName = 'REGION'; area = 'ADDRESS'; name='REGION'; options = @() }
+        @{ displayName = 'room_number'; area = 'ADDRESS'; name='ROOM_NO'; options = @('default') }
+        @{ displayName = 'ROOM_NO_P'; area = 'ADDRESS'; name='ROOM_NO_P'; options = @() }
+        @{ displayName = 'SECONDNAME'; area = 'ADDRESS'; name='SECONDNAME'; options = @() }
+        @{ displayName = 'SECURITY_POLICY'; area = 'LOGONDATA'; name='SECURITY_POLICY'; options = @('default') }
+        @{ displayName = 'SORT1'; area = 'ADDRESS'; name='SORT1'; options = @() }
+        @{ displayName = 'SORT1_P'; area = 'ADDRESS'; name='SORT1_P'; options = @() }
+        @{ displayName = 'SORT2'; area = 'ADDRESS'; name='SORT2'; options = @() }
+        @{ displayName = 'SORT2_P'; area = 'ADDRESS'; name='SORT2_P'; options = @() }
+        @{ displayName = 'delete_after_output'; area = 'DEFAULTS'; name='SPDA'; options = @('default') }
+        @{ displayName = 'output_immediately'; area = 'DEFAULTS'; name='SPDB'; options = @('default') }
+        @{ displayName = 'spool_output_service'; area = 'DEFAULTS'; name='SPLD'; options = @('default') }
+        @{ displayName = 'SPLG'; area = 'DEFAULTS'; name='SPLG'; options = @() }
+        @{ displayName = 'START_MENU'; area = 'DEFAULTS'; name='START_MENU'; options = @() }
+        @{ displayName = 'STCOD'; area = 'DEFAULTS'; name='STCOD'; options = @() }
+        @{ displayName = 'street'; area = 'ADDRESS'; name='STREET'; options = @('default') }
+        @{ displayName = 'STREET_NO'; area = 'ADDRESS'; name='STREET_NO'; options = @() }
+        @{ displayName = 'STR_ABBR'; area = 'ADDRESS'; name='STR_ABBR'; options = @() }
+        @{ displayName = 'STR_SUPPL1'; area = 'ADDRESS'; name='STR_SUPPL1'; options = @() }
+        @{ displayName = 'STR_SUPPL2'; area = 'ADDRESS'; name='STR_SUPPL2'; options = @() }
+        @{ displayName = 'STR_SUPPL3'; area = 'ADDRESS'; name='STR_SUPPL3'; options = @() }
+        @{ displayName = 'TAXJURCODE'; area = 'ADDRESS'; name='TAXJURCODE'; options = @() }
+        @{ displayName = 'telephone_extension'; area = 'ADDRESS'; name='TEL1_EXT'; options = @('default') }
+        @{ displayName = 'telephone_number'; area = 'ADDRESS'; name='TEL1_NUMBR'; options = @('default') }
+        @{ displayName = 'TIMEFM'; area = 'DEFAULTS'; name='TIMEFM'; options = @() }
+        @{ displayName = 'TIME_ZONE'; area = 'ADDRESS'; name='TIME_ZONE'; options = @() }
+        @{ displayName = 'TITLE'; area = 'ADDRESS'; name='TITLE'; options = @() }
+        @{ displayName = 'TITLE_ACA1'; area = 'ADDRESS'; name='TITLE_ACA1'; options = @() }
+        @{ displayName = 'TITLE_ACA2'; area = 'ADDRESS'; name='TITLE_ACA2'; options = @() }
+        @{ displayName = 'TITLE_P'; area = 'ADDRESS'; name='TITLE_P'; options = @() }
+        @{ displayName = 'TITLE_SPPL'; area = 'ADDRESS'; name='TITLE_SPPL'; options = @() }
+        @{ displayName = 'TOWNSHIP'; area = 'ADDRESS'; name='TOWNSHIP'; options = @() }
+        @{ displayName = 'TOWNSHIP_CODE'; area = 'ADDRESS'; name='TOWNSHIP_CODE'; options = @() }
+        @{ displayName = 'TRANSPZONE'; area = 'ADDRESS'; name='TRANSPZONE'; options = @() }
+        @{ displayName = 'TZONE'; area = 'LOGONDATA'; name='TZONE'; options = @() }
+        @{ displayName = 'USTYP'; area = 'LOGONDATA'; name='USTYP'; options = @() }
+        @{ displayName = 'WRONG_LOGON_LOCK_STATE'; area = 'ISLOCKED'; name='WRONG_LOGON_LOCK_STATE'; options = @('default') }
+        @{ displayName = 'XPCPT'; area = 'ADDRESS'; name='XPCPT'; options = @() }
     )
 }
 
-function Idm-SAP_UsersRead {
+$Global:PropertiesHT = [System.Collections.ArrayList]::new()
+$Global:Properties.User | ForEach-Object { $Global:PropertiesHT.Add([PSCustomObject]$_) > $null }
+$Global:PropertiesHT = $Global:PropertiesHT | Group-Object name -AsHashTable
+
+$Global:User = [System.Collections.ArrayList]@()
+$Global:User_Roles = [System.Collections.ArrayList]@()
+$Global:User_Profiles = [System.Collections.ArrayList]@()
+$Global:User_Parameters = [System.Collections.ArrayList]@()
+
+function Idm-UsersRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -260,7 +269,7 @@ function Idm-SAP_UsersRead {
     )
     
     Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
-    $Class = "SAP_User"
+    $Class = "User"
     
     if ($GetMeta) {
         #
@@ -280,108 +289,111 @@ function Idm-SAP_UsersRead {
         $properties = $function_params.properties
 
         if ($properties.length -eq 0) {
-            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }) | ForEach-Object {
-                if (-not [string]::IsNullOrWhiteSpace($_.displayName)) {
-                    $_.displayName
-                } else {
-                    $_.name
-                }
-            }
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
         }
         
         # Assure key is the first column
-        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
-        $properties = @($key) + (@($properties | Where-Object { $_ -ne $key }) | ForEach-Object { Get-FieldDisplay -Class $Class -Name $_ })
-        
-        try {
-            Log info "Retrieving User List"
-            $repository = $Global:Connection.Repository
-            [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('BAPI_USER_GETLIST')
-            $bapiFunctionCall.SetValue("WITH_USERNAME","X")
-            $bapiFunctionCall.SetValue("MAX_ROWS",99999)
-            $bapiFunctionCall.Invoke($Global:Connection)
-            [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('USERLIST')
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
 
-            Log info "Retrieving User Details"
-            $i = $returnData.count
+        $displayProperties = $properties | ForEach-Object { $Global:PropertiesHT[$_].displayName }
 
-            foreach($item in $returnData) {
-                $obj = @{
-                    LOCK_STATE = $false
-                    WRONG_LOGON_LOCK_STATE = $false
-                    LOCAL_LOCK_STATE = $false
-                    GLOBAL_LOCK_STATE = $false
-                    NO_PASSWORD_LOCK_STATE = $false
-                }
+        if($Global:User.count -lt 1) {
+            try {
+                Log info "Retrieving User List"
+                $repository = $Global:Connection.Repository
+                [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('BAPI_USER_GETLIST')
+                $bapiFunctionCall.SetValue("WITH_USERNAME","X")
+                $bapiFunctionCall.SetValue("MAX_ROWS",99999)
+                $bapiFunctionCall.Invoke($Global:Connection)
+                [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('USERLIST')
 
-                [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall2 = $repository.CreateFunction('BAPI_USER_GET_DETAIL')
-                $bapiFunctionCall2.SetValue("USERNAME",$item.GetValue("USERNAME"))
-                $bapiFunctionCall2.Invoke($Global:Connection)
-            
-                            
-                #Address (Export)
-                $export = $bapiFunctionCall2.GetObject('ADDRESS')
-                foreach($prop in $export) {
-                    $obj[(Get-FieldDisplay -Class $Class -Name $prop.Metadata.Name -Area 'ADDRESS')] = $export.GetValue($prop.Metadata.Name)
-                }
-            
-                #SNC (Export)
-                $export = $bapiFunctionCall2.GetObject('SNC')
-                foreach($prop in $export) {
-                    $obj[(Get-FieldDisplay -Class $Class -Name $prop.Metadata.Name -Area 'ADDRESS')] = $export.GetValue($prop.Metadata.Name)
-                }
-            
-                #Logondata (Export)
-                $export = $bapiFunctionCall2.GetObject('LOGONDATA')
-                foreach($prop in $export) {
-                    $obj[(Get-FieldDisplay -Class $Class -Name $prop.Metadata.Name -Area 'ADDRESS')] = $export.GetValue($prop.Metadata.Name)
-                }
-            
-                #Defaults (Export)
-                $export = $bapiFunctionCall2.GetObject('DEFAULTS')
-                foreach($prop in $export) {
-                    $obj[(Get-FieldDisplay -Class $Class -Name $prop.Metadata.Name -Area 'ADDRESS')] = $export.GetValue($prop.Metadata.Name)
-                }
-            
-                #ISLOCKED (Export)
-                $export = $bapiFunctionCall2.GetObject('ISLOCKED')
-                if($export.GetValue('WRNG_LOGON') -eq "L") {
-                    $obj.LOCK_STATE = $true
-                    $obj.WRONG_LOGON_LOCK_STATE = $true
-                }
-            
-                if($export.GetValue('LOCAL_LOCK') -eq "L") {
-                    $obj.LOCK_STATE = $true
-                    $obj.LOCAL_LOCK_STATE = $true
-                }
-                            
-                if($export.GetValue('GLOB_LOCK') -eq "L") {
-                    $obj.LOCK_STATE = $true
-                    $obj.GLOBAL_LOCK_STATE = $true
-                }
-            
-                if($export.GetValue('NO_USER_PW') -eq "L") {
-                    $obj.NO_PASSWORD_LOCK_STATE = $true
-                }
-            
-            
-                # Activity Groups (Table)
-                #table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('ACTIVITYGROUPS')
-                # Parameters (Table)
-                #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('PARAMETER')
-                # UCLASS (Table)
-                #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('UCLASSYS')
+                Log info "Retrieving User Details"
+                $i = $returnData.count
 
-                if(($i -= 1) % 100 -eq 0) {
-                    Log debug ("$($i) remaining user details to retrieve")
-                }
+                foreach($item in $returnData) {
+                    $obj = @{
+                        $Global:PropertiesHT["USERNAME"].displayName = $item.GetValue("USERNAME")
+                        LOCK_STATE = $false
+                        WRONG_LOGON_LOCK_STATE = $false
+                        LOCAL_LOCK_STATE = $false
+                        GLOBAL_LOCK_STATE = $false
+                        NO_PASSWORD_LOCK_STATE = $false
+                    }
 
-                ([PSCustomObject]$obj) | Select-Object $properties
+                    [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall2 = $repository.CreateFunction('BAPI_USER_GET_DETAIL')
+                    $bapiFunctionCall2.SetValue("USERNAME",$item.GetValue("USERNAME"))
+                    $bapiFunctionCall2.Invoke($Global:Connection)
+
+                    #Address (Export)
+                    $export = $bapiFunctionCall2.GetObject('ADDRESS')
+                    foreach($prop in $export) {
+                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                    }
+
+                    #SNC (Export)
+                    $export = $bapiFunctionCall2.GetObject('SNC')
+                    foreach($prop in $export) {
+                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                    }
+
+                    #Logondata (Export)
+                    $export = $bapiFunctionCall2.GetObject('LOGONDATA')
+                    foreach($prop in $export) {
+                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                    }
+
+                    #Defaults (Export)
+                    $export = $bapiFunctionCall2.GetObject('DEFAULTS')
+                    foreach($prop in $export) {
+                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                    }
+
+                    #ISLOCKED (Export)
+                    $export = $bapiFunctionCall2.GetObject('ISLOCKED')
+                    if($export.GetValue('WRNG_LOGON') -eq "L") {
+                        $obj.LOCK_STATE = $true
+                        $obj.WRONG_LOGON_LOCK_STATE = $true
+                    }
+
+                    if($export.GetValue('LOCAL_LOCK') -eq "L") {
+                        $obj.LOCK_STATE = $true
+                        $obj.LOCAL_LOCK_STATE = $true
+                    }
+
+                    if($export.GetValue('GLOB_LOCK') -eq "L") {
+                        $obj.LOCK_STATE = $true
+                        $obj.GLOBAL_LOCK_STATE = $true
+                    }
+
+                    if($export.GetValue('NO_USER_PW') -eq "L") {
+                        $obj.NO_PASSWORD_LOCK_STATE = $true
+                    }
+
+                    # Activity Groups (Table)
+                    #table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('ACTIVITYGROUPS')
+                    # Parameters (Table)
+                    #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('PARAMETER')
+                    # UCLASS (Table)
+                    #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('UCLASSYS')
+                    
+                    if(($i -= 1) % 100 -eq 0) {
+                        Log debug ("$($i) remaining user details to retrieve")
+                    }
+
+                    $ret = ([PSCustomObject]$obj) | Select-Object $displayProperties
+                    [void]$Global:User.Add($ret);
+                    
+                    $ret
+                    
+                }
             }
-        }
-        catch {
-            Log error $_
-            Write-Error $_
+            catch {
+                Log error $_
+                Write-Error $_
+            }
+        } else { 
+            foreach($item in $Global:User) { $item }
         }
     }
 
@@ -414,24 +426,6 @@ function Open-SAPConnection {
     }
 
     Log info "Done"
-}
-
-function Get-FieldDisplay {
-    param (
-        [string] $Class,
-        [string] $Name,
-        [string] $Area
-    )
-    
-    $fields = $Global:Properties.$Class
-    $field = $fields | ? { $_.name -eq $Name}
-    $ret = $Name
-
-    if($field.displayName.length -gt 0) {
-        $ret = $field.displayName
-    }
-    
-    $ret
 }
 
 function Get-ClassMetaData {
