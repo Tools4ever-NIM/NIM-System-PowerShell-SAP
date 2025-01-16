@@ -246,7 +246,6 @@ $Global:Properties = @{
         @{ displayName = ""; area = ""; name = "TOWNSHIP_CODE"; options = @() }
         @{ displayName = ""; area = ""; name = "TRANSPZONE"; options = @() }
         @{ displayName = ""; area = ""; name = "TZONE"; options = @() }
-        @{ displayName = ""; area = ""; name = "USERNAME"; options = @('default','key') }
         @{ displayName = ""; area = ""; name = "USTYP"; options = @() }
         @{ displayName = ""; area = ""; name = "WRONG_LOGON_LOCK_STATE"; options = @('default') }
         @{ displayName = ""; area = ""; name = "XPCPT"; options = @() }
@@ -277,17 +276,23 @@ function Idm-SAP_UsersRead {
 
         # Setup Connection
         $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
-
+        
         $properties = $function_params.properties
 
         if ($properties.length -eq 0) {
-            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }) | ForEach-Object {
+                if (-not [string]::IsNullOrWhiteSpace($_.displayName)) {
+                    $_.displayName
+                } else {
+                    $_.name
+                }
+            }
         }
-
+        
         # Assure key is the first column
-        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
-        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
-                
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        $properties = @($key) + (@($properties | Where-Object { $_ -ne $key }) | ForEach-Object { Get-FieldDisplay -Class $Class -Name $_ })
+        
         try {
             Log info "Retrieving User List"
             $repository = $Global:Connection.Repository
@@ -375,7 +380,7 @@ function Idm-SAP_UsersRead {
             }
         }
         catch {
-            Log error "Failed: $($_))" 
+            Log error $_
             Write-Error $_
         }
     }
@@ -424,10 +429,8 @@ function Get-FieldDisplay {
 
     if($field.displayName.length -gt 0) {
         $ret = $field.displayName
-    } else {
-        Log info "$($Name) - $($Area)"
     }
-
+    
     $ret
 }
 
