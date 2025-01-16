@@ -114,6 +114,7 @@ function Idm-OnUnload {
 #
 
 $Global:Properties = @{
+    UserHT = [System.Collections.ArrayList]@()
     User = @(
         @{ displayName = 'Username'; area = 'ADDRESS'; name='USERNAME'; options = @('default','key') }
         @{ displayName = 'account_id'; area = 'LOGONDATA'; name='ACCNT'; options = @('default') }
@@ -250,18 +251,54 @@ $Global:Properties = @{
         @{ displayName = 'WRONG_LOGON_LOCK_STATE'; area = 'ISLOCKED'; name='WRONG_LOGON_LOCK_STATE'; options = @('default') }
         @{ displayName = 'XPCPT'; area = 'ADDRESS'; name='XPCPT'; options = @() }
     )
+    UserRoleHT = [System.Collections.ArrayList]@()
+    UserRole = @(
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
+        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default') }
+        @{ displayName = 'FRM_DATE'; name='FRM_DATE'; options = @('default') }
+        @{ displayName = 'TO_DATE'; name='TO_DATE'; options = @('default') }
+        @{ displayName = 'ORG_FLAG'; name='ORG_FLAG'; options = @('default') }
+    )
+    UserParameterHT = [System.Collections.ArrayList]@()
+    UserParameter = @(
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
+        @{ displayName = 'parid'; name='parid'; options = @('default') }
+        @{ displayName = 'parva'; name='parva'; options = @('default') }
+        @{ displayName = 'partxt'; name='partxt'; options = @('default') }
+    )
+    UserProfileHT = [System.Collections.ArrayList]@()
+    UserProfile = @(
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
+        @{ displayName = 'bapiprof'; name='bapiprof'; options = @('default') }
+        @{ displayName = 'bapiptext'; name='bapiptext'; options = @('default') }
+        @{ displayName = 'bapiaktps'; name='bapiaktps'; options = @('default') }
+        @{ displayName = 'bapitype'; name='bapitype'; options = @('default') }
+    )
+    RoleHT = [System.Collections.ArrayList]@()
+    Role = @(
+        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default','key') }
+        @{ displayName = 'FLAG_COLL'; name='FLAG_COLL'; options = @('default') }
+        @{ displayName = 'TEXT'; name='TEXT'; options = @('default') }
+    )
 }
 
-$Global:PropertiesHT = [System.Collections.ArrayList]::new()
-$Global:Properties.User | ForEach-Object { $Global:PropertiesHT.Add([PSCustomObject]$_) > $null }
-$Global:PropertiesHT = $Global:PropertiesHT | Group-Object name -AsHashTable
+$Global:Properties.User | ForEach-Object { $Global:Properties.UserHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserHT = $Global:Properties.UserHT | Group-Object name -AsHashTable
+$Global:Properties.UserRole | ForEach-Object { $Global:Properties.UserRoleHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserRoleHT = $Global:Properties.UserRoleHT | Group-Object name -AsHashTable
+$Global:Properties.UserParameter | ForEach-Object { $Global:Properties.UserParameterHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserParameterHT = $Global:Properties.UserParameterHT | Group-Object name -AsHashTable
+$Global:Properties.UserProfile | ForEach-Object { $Global:Properties.UserProfileHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserProfileHT = $Global:Properties.UserProfileHT | Group-Object name -AsHashTable
+$Global:Properties.Role | ForEach-Object { $Global:Properties.RoleHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.RoleHT = $Global:Properties.RoleHT | Group-Object name -AsHashTable
 
 $Global:User = [System.Collections.ArrayList]@()
-$Global:User_Roles = [System.Collections.ArrayList]@()
-$Global:User_Profiles = [System.Collections.ArrayList]@()
-$Global:User_Parameters = [System.Collections.ArrayList]@()
+$Global:UserRole = [System.Collections.ArrayList]@()
+$Global:UserParameter = [System.Collections.ArrayList]@()
+$Global:UserProfile = [System.Collections.ArrayList]@()
 
-function Idm-UsersRead {
+function Idm-UserRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -296,10 +333,9 @@ function Idm-UsersRead {
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
         $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
 
-        $displayProperties = $properties | ForEach-Object { $Global:PropertiesHT[$_].displayName }
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.UserHT[$_].displayName }
 
         if($Global:User.count -lt 1) {
-            try {
                 Log info "Retrieving User List"
                 $repository = $Global:Connection.Repository
                 [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('BAPI_USER_GETLIST')
@@ -313,7 +349,7 @@ function Idm-UsersRead {
 
                 foreach($item in $returnData) {
                     $obj = @{
-                        $Global:PropertiesHT["USERNAME"].displayName = $item.GetValue("USERNAME")
+                        $Global:Properties.UserHT["USERNAME"].displayName = $item.GetValue("USERNAME")
                         LOCK_STATE = $false
                         WRONG_LOGON_LOCK_STATE = $false
                         LOCAL_LOCK_STATE = $false
@@ -328,25 +364,25 @@ function Idm-UsersRead {
                     #Address (Export)
                     $export = $bapiFunctionCall2.GetObject('ADDRESS')
                     foreach($prop in $export) {
-                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
                     }
 
                     #SNC (Export)
                     $export = $bapiFunctionCall2.GetObject('SNC')
                     foreach($prop in $export) {
-                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
                     }
 
                     #Logondata (Export)
                     $export = $bapiFunctionCall2.GetObject('LOGONDATA')
                     foreach($prop in $export) {
-                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
                     }
 
                     #Defaults (Export)
                     $export = $bapiFunctionCall2.GetObject('DEFAULTS')
                     foreach($prop in $export) {
-                        $obj[$Global:PropertiesHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
                     }
 
                     #ISLOCKED (Export)
@@ -371,11 +407,52 @@ function Idm-UsersRead {
                     }
 
                     # Activity Groups (Table)
-                    #table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('ACTIVITYGROUPS')
+                    $table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('ACTIVITYGROUPS')
+                    foreach($row in $table) {
+                        $table_obj = @{
+                            $Global:Properties.UserRoleHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
+                        }
+                        foreach($prop in $row) {
+                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                        }
+                        [void]$Global:UserRole.Add([PSCustomObject]$table_obj);
+                    } 
+
                     # Parameters (Table)
-                    #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('PARAMETER')
+                    $table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('PARAMETER')
+                    foreach($row in $table) {
+                        $table_obj = @{
+                            $Global:Properties.UserParameterHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
+                        }
+                        foreach($prop in $row) {
+                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                        }
+                        [void]$Global:UserParameter.Add([PSCustomObject]$table_obj);
+                    } 
+
+                    # Profile (Table)
+                    $table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('PROFILES')
+                    foreach($row in $table) {
+                        $table_obj = @{
+                            $Global:Properties.UserProfileHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
+                        }
+                        foreach($prop in $row) {
+                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                        }
+                        [void]$Global:UserProfile.Add([PSCustomObject]$table_obj);
+                    } 
+
                     # UCLASS (Table)
-                    #[SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('UCLASSYS')
+                    <#$table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('UCLASSYS')
+                    foreach($row in $table) {
+                        $table_obj = @{
+                            $Global:Properties.UserRoleHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
+                        }
+                        foreach($prop in $row) {
+                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                        }
+                        [void]$Global:User_UCLASS.Add([PSCustomObject]$table_obj);
+                    } #>
                     
                     if(($i -= 1) % 100 -eq 0) {
                         Log debug ("$($i) remaining user details to retrieve")
@@ -385,16 +462,222 @@ function Idm-UsersRead {
                     [void]$Global:User.Add($ret);
                     
                     $ret
-                    
                 }
-            }
-            catch {
-                Log error $_
-                Write-Error $_
-            }
         } else { 
             foreach($item in $Global:User) { $item }
         }
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserRolesRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserRole"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.UserRoleHT[$_].displayName }
+
+        if($Global:User.count -lt 1) {
+            Idm-UserRead -SystemParams $SystemParams | Out-Null
+        } 
+
+        foreach($item in $Global:UserRole) {            
+            $item
+        }
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserParametersRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserParameter"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.UserParameterHT[$_].displayName }
+
+        if($Global:User.count -lt 1) {
+            Idm-UserRead -SystemParams $SystemParams | Out-Null
+        } 
+
+        foreach($item in $Global:UserParameter) {            
+            $item
+        }
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserProfilesRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserProfile"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.UserProfileHT[$_].displayName }
+
+        if($Global:User.count -lt 1) {
+            Idm-UserRead -SystemParams $SystemParams | Out-Null
+        } 
+
+        foreach($item in $Global:UserProfile) {            
+            $item
+        }
+    }
+
+    Log info "Done"
+}
+
+function Idm-RoleRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "Role"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.RoleHT[$_].displayName }
+
+        Log info "Retrieving Role List"
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('PRGN_ROLE_GETLIST')
+        $bapiFunctionCall.SetValue("WITH_ROLENAME","X")
+        $bapiFunctionCall.SetValue("COLL_OR_SINGLE_ONLY"," ")
+        $bapiFunctionCall.SetValue("MAX_ROWS",99999)
+
+        [SAP.Middleware.Connector.IRfcTable]$selectionRange = $bapiFunctionCall.GetTable("SELECTION_RANGE")
+        $selectionRange.Append()
+        $selectionRange.SetValue("SIGN", "I") 
+        $selectionRange.SetValue("OPTION", "CP")    
+        $selectionRange.SetValue("LOW", "*")
+
+        $bapiFunctionCall.Invoke($Global:Connection)
+        [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('ROLES')
+        
+        foreach($row in $returnData) {
+            $table_obj = @{}
+            foreach($prop in $row) {
+                $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            }
+            [PSCustomObject]$table_obj
+        } 
     }
 
     Log info "Done"
