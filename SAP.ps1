@@ -1,7 +1,7 @@
 # SAP.ps1 - SAP
 
 $Log_MaskableKeys = @(
-    "password"
+    "Password"
 )
 
 # System functions
@@ -95,8 +95,7 @@ function Idm-SystemInfo {
     }
 
     if ($TestConnection) {
-        # Test is a failure only if an exception is thrown.
-        $response = Idm-UsaStatesRead -SystemParams $ConnectionParams
+        Idm-RoleRead -SystemParams $ConnectionParams | Out-Null
     }
 
     if ($Configuration) {
@@ -455,18 +454,6 @@ function Idm-UserRead {
                         }
                         [void]$Global:UserProfile.Add([PSCustomObject]$table_obj);
                     } 
-
-                    # UCLASS (Table)
-                    <#$table = [SAP.Middleware.Connector.IRfcTable]$table = $bapiFunctionCall2.GetTable('UCLASSYS')
-                    foreach($row in $table) {
-                        $table_obj = @{
-                            $Global:Properties.UserRoleHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
-                        }
-                        foreach($prop in $row) {
-                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
-                        }
-                        [void]$Global:User_UCLASS.Add([PSCustomObject]$table_obj);
-                    } #>
                     
                     if(($i -= 1) % 100 -eq 0) {
                         Log debug ("$($i) remaining user details to retrieve")
@@ -527,7 +514,7 @@ function Idm-UserRolesRead {
         } 
 
         foreach($item in $Global:UserRole) {            
-            $item
+            $item | Select-Object $displayProperties
         }
     }
 
@@ -576,7 +563,7 @@ function Idm-UserParametersRead {
         } 
 
         foreach($item in $Global:UserParameter) {            
-            $item
+            $item | Select-Object $displayProperties
         }
     }
 
@@ -625,7 +612,7 @@ function Idm-UserProfilesRead {
         } 
 
         foreach($item in $Global:UserProfile) {            
-            $item
+            $item | Select-Object $displayProperties
         }
     }
 
@@ -690,7 +677,7 @@ function Idm-RoleRead {
             foreach($prop in $row) {
                 $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
             }
-            [PSCustomObject]$table_obj
+            ([PSCustomObject]$table_obj) | Select-Object $displayProperties
         } 
     }
 
@@ -742,7 +729,7 @@ function Idm-ProfileRead {
             foreach($prop in $item.PSObject.Properties) {
                 $obj[($Global:Properties.ProfileHT[$prop.Name]).displayName] = $prop.Value
             }
-            [PSCustomObject]$obj
+            ([PSCustomObject]$obj) | Select-Object $displayProperties
         }
     }
 
@@ -794,7 +781,7 @@ function Idm-ParameterRead {
             foreach($prop in $item.PSObject.Properties) {
                 $obj[($Global:Properties.ParameterHT[$prop.Name]).displayName] = $prop.Value
             }
-            [PSCustomObject]$obj
+            ([PSCustomObject]$obj) | Select-Object $displayProperties
         }
     }
 
@@ -990,3 +977,119 @@ Function Read-Table {
     }
 
 }
+
+$configScenarios = @'
+[{"name":"Default","description":"Default Configuration","version":"1.0","createTime":1737128086413,
+"modifyTime":1737128086413,"name_values":[{"name":"Client","value":null},{"name":"Hostname","value":
+null},{"name":"Password","value":null},{"name":"SAPdllDirectoryPath","value":null},{"name":"SysId","
+value":null},{"name":"SysNr","value":null},{"name":"Username","value":null},{"name":"collections","v
+alue":["Parameter","Profile","Role","UserParameters","UserProfiles","User","UserRoles"]},{"name":"nr
+_of_sessions","value":null},{"name":"sessions_idle_timeout","value":null}],"collections":[{"col_name
+":"User","fields":[{"field_name":"Username","field_type":"string","include":true,"field_format":"","
+field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_nam
+e":"account_id","field_type":"string","include":true,"field_format":"","field_source":"data","javasc
+ript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"building","field_type":"
+string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
+ce":false,"ref_col_fields":[]},{"field_name":"city","field_type":"string","include":true,"field_form
+at":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"f
+ield_name":"department","field_type":"string","include":true,"field_format":"","field_source":"data"
+,"javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"facsimile_extens
+ion","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","r
+ef_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"facsimile_number","field_type":"str
+ing","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference"
+:false,"ref_col_fields":[]},{"field_name":"first_name","field_type":"string","include":true,"field_f
+ormat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},
+{"field_name":"full_name","field_type":"string","include":true,"field_format":"","field_source":"dat
+a","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"GLOBAL_LOCK_ST
+ATE","field_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","
+ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"vaild_to","field_type":"date","inc
+lude":true,"field_format":"yyyy-mm-dd (local)","field_source":"data","javascript":"","ref_col":[],"r
+eference":false,"ref_col_fields":[]},{"field_name":"valid_from","field_type":"date","include":true,"
+field_format":"yyyy-mm-dd (local)","field_source":"data","javascript":"","ref_col":[],"reference":fa
+lse,"ref_col_fields":[]},{"field_name":"scn_permit_sap_gui_checkbox","field_type":"string","include"
+:true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_co
+l_fields":[]},{"field_name":"house","field_type":"string","include":true,"field_format":"","field_so
+urce":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"init
+ials","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","
+ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"cost_center","field_type":"string"
+,"include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":fal
+se,"ref_col_fields":[]},{"field_name":"language","field_type":"string","include":true,"field_format"
+:"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"fiel
+d_name":"last_name","field_type":"string","include":true,"field_format":"","field_source":"data","ja
+vascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"LOCAL_LOCK_STATE","f
+ield_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","ref_col
+":[],"reference":false,"ref_col_fields":[]},{"field_name":"LOCK_STATE","field_type":"boolean","inclu
+de":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref
+_col_fields":[]},{"field_name":"middle_name","field_type":"string","include":true,"field_format":"",
+"field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_na
+me":"NO_PASSWORD_LOCK_STATE","field_type":"boolean","include":true,"field_format":"","field_source":
+"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"secure_net
+work_communication","field_type":"string","include":true,"field_format":"","field_source":"data","ja
+vascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"postal_code","field_
+type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"
+reference":false,"ref_col_fields":[]},{"field_name":"room_number","field_type":"string","include":tr
+ue,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_f
+ields":[]},{"field_name":"SECURITY_POLICY","field_type":"string","include":true,"field_format":"","f
+ield_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name
+":"delete_after_output","field_type":"string","include":true,"field_format":"","field_source":"data"
+,"javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"output_immediate
+ly","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","re
+f_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"spool_output_service","field_type":"
+string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
+ce":false,"ref_col_fields":[]},{"field_name":"street","field_type":"string","include":true,"field_fo
+rmat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{
+"field_name":"telephone_extension","field_type":"string","include":true,"field_format":"","field_sou
+rce":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"telep
+hone_number","field_type":"string","include":true,"field_format":"","field_source":"data","javascrip
+t":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"WRONG_LOGON_LOCK_STATE","fi
+eld_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","ref_col"
+:[],"reference":false,"ref_col_fields":[]}],"key":"Username","display":"Username","name_values":[],"
+sys_nn":[],"source":"data"},{"col_name":"Parameter","fields":[{"field_name":"PARAMID","field_type":"
+string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
+ce":false,"ref_col_fields":[]},{"field_name":"PARTEXT","field_type":"string","include":true,"field_f
+ormat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}]
+,"key":"PARAMID","display":"PARAMID","name_values":[],"sys_nn":[],"source":"data"},{"col_name":"Prof
+ile","fields":[{"field_name":"PROFN","field_type":"string","include":true,"field_format":"","field_s
+ource":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"TYP
+","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_
+col":[],"reference":false,"ref_col_fields":[]}],"key":"PROFN","display":"PROFN","name_values":[],"sy
+s_nn":[],"source":"data"},{"col_name":"Role","fields":[{"field_name":"FLAG_COLL","field_type":"strin
+g","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":f
+alse,"ref_col_fields":[]},{"field_name":"AGR_NAME","field_type":"string","include":true,"field_forma
+t":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"fi
+eld_name":"TEXT","field_type":"string","include":true,"field_format":"","field_source":"data","javas
+cript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"key":"AGR_NAME","display":"AGR_NAME"
+,"name_values":[],"sys_nn":[],"source":"data"},{"col_name":"UserParameters","fields":[{"field_name":
+"Username","field_type":"string","include":true,"field_format":"","field_source":"data","javascript"
+:"","ref_col":["User"],"reference":false,"ref_col_fields":[]},{"field_name":"PARID","field_type":"st
+ring","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference
+":false,"ref_col_fields":[]},{"field_name":"PARTXT","field_type":"string","include":true,"field_form
+at":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"f
+ield_name":"PARVA","field_type":"string","include":true,"field_format":"","field_source":"data","jav
+ascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"display":"","name_values":[],"sys_
+nn":[],"source":"data"},{"col_name":"UserProfiles","fields":[{"field_name":"Username","field_type":"
+string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":["User"],"r
+eference":false,"ref_col_fields":[]},{"field_name":"BAPIPROF","field_type":"string","include":true,"
+field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_field
+s":[]},{"field_name":"BAPIAKTPS","field_type":"string","include":true,"field_format":"","field_sourc
+e":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"BAPITYP
+E","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref
+_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"BAPIPTEXT","field_type":"string","inc
+lude":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"r
+ef_col_fields":[]}],"key":"","display":"","name_values":[],"sys_nn":[],"source":"data"},{"col_name":
+"UserRoles","fields":[{"field_name":"TO_DAT","field_type":"string","include":true,"field_format":"",
+"field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_na
+me":"AGR_NAME","field_type":"string","include":true,"field_format":"","field_source":"data","javascr
+ipt":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"Username","field_type":"s
+tring","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":["User"],"re
+ference":false,"ref_col_fields":[]},{"field_name":"ORG_FLAG","field_type":"string","include":true,"f
+ield_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields
+":[]},{"field_name":"FROM_DAT","field_type":"string","include":true,"field_format":"","field_source"
+:"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"AGR_TEXT"
+,"field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_c
+ol":[],"reference":false,"ref_col_fields":[]},{"field_name":"FRM_DATE","field_type":"string","includ
+e":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_
+col_fields":[]},{"field_name":"TO_DATE","field_type":"string","include":true,"field_format":"","fiel
+d_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"key":"","disp
+lay":"","name_values":[],"sys_nn":[],"source":"data"}]}]
+'@
