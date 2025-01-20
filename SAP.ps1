@@ -95,7 +95,7 @@ function Idm-SystemInfo {
     }
 
     if ($TestConnection) {
-        Idm-RoleRead -SystemParams $ConnectionParams | Out-Null
+        Idm-RolesRead -SystemParams $ConnectionParams | Out-Null
     }
 
     if ($Configuration) {
@@ -122,7 +122,7 @@ $Global:Properties = @{
         @{ displayName = 'ADR_NOTES'; area = 'ADDRESS'; name='ADR_NOTES'; options = @() }
         @{ displayName = 'BCODE'; area = 'LOGONDATA'; name='BCODE'; options = @() }
         @{ displayName = 'BIRTH_NAME'; area = 'ADDRESS'; name='BIRTH_NAME'; options = @() }
-        @{ displayName = 'BAPIPWD'; area = 'PASSWORD'; name='BAPIPWD'; options = @('create','update') }
+        @{ displayName = 'BAPIPWD'; area = 'PASSWORD'; name='BAPIPWD'; options = @('default','create','update') }
         @{ displayName = 'BNAME_CHARGEABLE'; area = 'UCLASS'; name='BNAME_CHARGEABLE'; options = @() }
         @{ displayName = 'building'; area = 'ADDRESS'; name='BUILDING'; options = @('default') }
         @{ displayName = 'BUILDING_P'; area = 'ADDRESS'; name='BUILDING_P'; options = @('create','update') }
@@ -149,6 +149,7 @@ $Global:Properties = @{
         @{ displayName = 'DELI_SERV_NUMBER'; area = 'ADDRESS'; name='DELI_SERV_NUMBER'; options = @() }
         @{ displayName = 'DELI_SERV_TYPE'; area = 'ADDRESS'; name='DELI_SERV_TYPE'; options = @() }
         @{ displayName = 'department'; area = 'ADDRESS'; name='DEPARTMENT'; options = @('default','create','update') }
+        @{ displayName = 'disable_password'; area = 'PASSWORD'; name='disable_password'; options = @('create','update') }
         @{ displayName = 'DISTRCT_NO'; area = 'ADDRESS'; name='DISTRCT_NO'; options = @() }
         @{ displayName = 'DISTRICT'; area = 'ADDRESS'; name='DISTRICT'; options = @() }
         @{ displayName = 'DONT_USE_P'; area = 'ADDRESS'; name='DONT_USE_P'; options = @() }
@@ -185,7 +186,7 @@ $Global:Properties = @{
         @{ displayName = 'LIC_TYPE'; area = 'UCLASS'; name='LIC_TYPE'; options = @('default','create','update') }
         @{ displayName = 'LOCAL_LOCK_STATE'; area = 'ISLOCKED'; name='LOCAL_LOCK_STATE'; options = @('default') }
         @{ displayName = 'LOCATION'; area = 'ADDRESS'; name='LOCATION'; options = @() }
-        @{ displayName = 'LOCK_STATE'; area = 'ISLOCKED'; name='LOCK_STATE'; options = @('default') }
+        @{ displayName = 'LOCK_STATE'; area = 'ISLOCKED'; name='LOCK_STATE'; options = @('default','lock','unlock') }
         @{ displayName = 'LTIME'; area = 'LOGONDATA'; name='LTIME'; options = @() }
         @{ displayName = 'middle_name'; area = 'ADDRESS'; name='MIDDLENAME'; options = @('default','create','update') }
         @{ displayName = 'NAMCOUNTRY'; area = 'ADDRESS'; name='NAMCOUNTRY'; options = @() }
@@ -522,7 +523,7 @@ function Idm-UserCreate {
         # Execute function
         #
 
-        $connection_params = ConvertSystemParams -Connection $SystemParams
+        $system_params = ConvertFrom-Json2 $SystemParams
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
@@ -532,17 +533,66 @@ function Idm-UserCreate {
         
         $properties = $function_params.Clone()
 
-        $obj = @{}
+        $function = 'BAPI_USER_CREATE1'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$userCreate = $repository.CreateFunction($function)
+        
+        [SAP.Middleware.Connector.IRfcStructure]$userPassword = $userCreate.GetStructure("PASSWORD")
+        [SAP.Middleware.Connector.IRfcStructure]$userAddress = $userCreate.GetStructure("ADDRESS")
+        [SAP.Middleware.Connector.IRfcStructure]$userDefaults = $userCreate.GetStructure("DEFAULTS")
+        [SAP.Middleware.Connector.IRfcStructure]$userLogonData = $userCreate.GetStructure("LOGONDATA")
+        [SAP.Middleware.Connector.IRfcStructure]$userSNC = $userCreate.GetStructure("SNC")
+        [SAP.Middleware.Connector.IRfcStructure]$userUClass = $userCreate.GetStructure("UCLASS")
 
-        foreach($prop in $properties.PSObject.properties) {
-            $obj[$Global:UserInvertHT[$prop.Name].name] = $prop.Value
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
+
+            if($prop.Name -eq $key) {
+                $userCreate.SetValue($field.name,$prop.Value)
+                continue
+            }
+            
+            #Check for Password Fields
+            if($field.name -in @('BAPIPWD','CODVN')) {
+
+            } else {
+                #Parse by Area
+                switch($field.area) {
+                    #Parse Outside of switch     
+                    {$_ -in @('BAPIPWD','CODVN')} { continue }
+                    
+                    #Datetime Fields
+                    # Maybe needed for GLTGV and GLTGB
+
+                    #Boolean Fields
+                    {$_ -eq 'SNC' -and $field.name -eq 'GUIFLAG'} { $userSNC.SetValue('GUIFLAG',$prop.Value)}
+                    
+                    #Direct Mapping
+                    'ADDRESS'   { $userAddress.SetValue($field.name,$prop.Value) }
+                    'SNC'       { $userSNC.SetValue($field.name,$prop.Value) }
+                    'DEFAULTS'  { $userDefaults.SetValue($field.name,$prop.Value) }
+                    'LOGONDATA' { $userLogonData.SetValue($field.name,$prop.Value) }
+                    'UCLASS'    { $userUClass.SetValue($field.name,$prop.Value) }
+                    
+                    
+                    #Failback
+                    default { LogIO warn $function -Out "[$($field.name)] in [$($field.area)] does not have a connector mapping for user create, skipping" }
+                }
+            }
         }
 
-        LogIO info "BAPI_USER_CREATE1" -In @connection_params -Identity $function_params.($Global:Properties.UserHT["USERNAME"].displayName) -Properties $properties
-            #$rv = Set-ADUser-ADSI @connection_params -PassThru -Identity $function_params.objectGUID -Properties $properties
-        LogIO info "BAPI_USER_CREATE1" -Out $rv
+        #Parse password Options
+        if($user.disable_password) {
+            $userLogonData.SetValue('CODVN','X')
+            $userPassword.SetValue('BAPIPWD','')
+        } else {
+            $userPassword.SetValue('BAPIPWD',$Properties.BAPIPWD)
+        }
 
-        $rv
+        $userCreate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userCreate -Context $function
+        LogIO info $function
     }
 
     Log info "Done"
@@ -580,7 +630,7 @@ function Idm-UserUpdate {
         # Execute function
         #
 
-        $connection_params = ConvertSystemParams -Connection $SystemParams
+        $system_params = ConvertFrom-Json2 $SystemParams
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
@@ -590,17 +640,251 @@ function Idm-UserUpdate {
         
         $properties = $function_params.Clone()
 
+        $function = 'BAPI_USER_CHANGE'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
+        
+        [SAP.Middleware.Connector.IRfcStructure]$userPassword = $userUpdate.GetStructure("PASSWORD")
+        [SAP.Middleware.Connector.IRfcStructure]$userAddress = $userUpdate.GetStructure("ADDRESS")
+        [SAP.Middleware.Connector.IRfcStructure]$userDefaults = $userUpdate.GetStructure("DEFAULTS")
+        [SAP.Middleware.Connector.IRfcStructure]$userLogonData = $userUpdate.GetStructure("LOGONDATA")
+        [SAP.Middleware.Connector.IRfcStructure]$userSNC = $userUpdate.GetStructure("SNC")
+        [SAP.Middleware.Connector.IRfcStructure]$userUClass = $userUpdate.GetStructure("UCLASS")
 
-        LogIO info "BAPI_USER_CHANGE" -In @connection_params -Identity $function_params.($Global:Properties.UserHT["USERNAME"].displayName) -Properties $properties
-            #$rv = Set-ADUser-ADSI @connection_params -PassThru -Identity $function_params.objectGUID -Properties $properties
-        LogIO info "BAPI_USER_CHANGE" -Out $rv
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
 
-        $rv
+            if($prop.Name -eq $key) {
+                $userUpdate.SetValue($field.name,$prop.Value)
+                continue
+            }
+            
+            #Check for Password Fields
+            if($field.name -in @('BAPIPWD','CODVN')) {
+
+            } else {
+                #Parse by Area
+                switch($field.area) {
+                    #Parse Outside of switch     
+                    {$_ -in @('BAPIPWD','CODVN')} { continue }
+                    
+                    #Datetime Fields
+                    # Maybe needed for GLTGV and GLTGB
+
+                    #Boolean Fields
+                    {$_ -eq 'SNC' -and $field.name -eq 'GUIFLAG'} { $userSNC.SetValue('GUIFLAG',($PropValue -eq 'X'))}
+                    
+                    #Direct Mapping
+                    'ADDRESS'   { $userAddress.SetValue($field.name,$prop.Value); Log info "[$($field.Name)] - [$($prop.Value)]" }
+                    'SNC'       { $userSNC.SetValue($field.name,$prop.Value) }
+                    'DEFAULTS'  { $userDefaults.SetValue($field.name,$prop.Value) }
+                    'LOGONDATA' { $userLogonData.SetValue($field.name,$prop.Value) }
+                    'UCLASS'    { $userUClass.SetValue($field.name,$prop.Value) }
+                    
+                    #Failback
+                    default { LogIO warn $function -Out "[$($field.name)] in [$($field.area)] does not have a connector mapping for user create, skipping" }
+                }
+            }
+        }
+
+        #Parse password Options
+        if($user.disable_password) {
+            $userLogonData.SetValue('CODVN','X')
+            $userPassword.SetValue('BAPIPWD','')
+        } elseif ($user.BAPIPWD.length -gt 0) {
+            $userPassword.SetValue('BAPIPWD',$Properties.BAPIPWD)
+        }
+        
+        $userUpdate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userUpdate -Context $function
+        LogIO info $function
     }
 
     Log info "Done"
 }
 
+function Idm-UserLock {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "User"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'update'
+            parameters = @(
+                @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('lock') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_LOCK'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
+
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
+
+            if($prop.Name -eq $key) {
+                $userUpdate.SetValue($field.name,$prop.Value)
+                continue
+            }
+        }
+
+        $userUpdate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userUpdate -Context $function
+        LogIO info $function
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserUnlock {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "User"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'update'
+            parameters = @(
+                @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('lock') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_UNLOCK'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
+
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
+
+            if($prop.Name -eq $key) {
+                $userUpdate.SetValue($field.name,$prop.Value)
+                continue
+            }
+        }
+
+        $userUpdate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userUpdate -Context $function
+        LogIO info $function
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserDelete {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "User"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'delete'
+            parameters = @(
+                @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('delete') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        $properties = $function_params.Clone()
+        $function = 'BAPI_USER_DELETE'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+        [SAP.Middleware.Connector.IRfcFunction]$userDelete = $repository.CreateFunction($function)
+        $userDelete.SetValue('USERNAME',$Properties.$key)
+        $userDelete.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userDelete -Context $function
+
+        LogIO info $function
+    }
+
+    Log info "Done"
+}
 
 function Idm-UserRolesRead {
     param (
@@ -1010,7 +1294,7 @@ function Get-ClassMetaData {
     )
 }
 
-Function Read-Table {
+function Read-Table {
     param (
         [parameter(Mandatory = $true)]$destination,
         [parameter(Mandatory = $true)]$QueryTable,
@@ -1111,7 +1395,30 @@ Function Read-Table {
     }
 
 }
+function Get-ReturnLog {
+    param (
+        $Call,
+        $Context
+    )
+    #Get Return Table
+    $table = $Call.GetTable("RETURN")  
 
+    foreach($row in $table) {
+        $rowObj = @{}
+        foreach($prop in $row) {
+            $rowObj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+        }
+
+        $type = "info"
+        if($rowObj.Type -eq 'E') { 
+            $type = "error"
+            Log error $rowObj.MESSAGE
+        }
+
+        LogIO $type $Context -Out $rowObj
+    } 
+}
+    
 #
 # Configuration
 #
