@@ -114,74 +114,80 @@ function Idm-OnUnload {
 
 $Global:Properties = @{
     UserHT = [System.Collections.ArrayList]@()
+    UserInvertHT = [System.Collections.ArrayList]@()
     User = @(
         @{ displayName = 'Username'; area = 'ADDRESS'; name='USERNAME'; options = @('default','key') }
-        @{ displayName = 'account_id'; area = 'LOGONDATA'; name='ACCNT'; options = @('default') }
+        @{ displayName = 'account_id'; area = 'LOGONDATA'; name='ACCNT'; options = @('default','create','update') }
         @{ displayName = 'ADDR_NO'; area = 'ADDRESS'; name='ADDR_NO'; options = @() }
         @{ displayName = 'ADR_NOTES'; area = 'ADDRESS'; name='ADR_NOTES'; options = @() }
         @{ displayName = 'BCODE'; area = 'LOGONDATA'; name='BCODE'; options = @() }
         @{ displayName = 'BIRTH_NAME'; area = 'ADDRESS'; name='BIRTH_NAME'; options = @() }
+        @{ displayName = 'BAPIPWD'; area = 'PASSWORD'; name='BAPIPWD'; options = @('create','update') }
+        @{ displayName = 'BNAME_CHARGEABLE'; area = 'UCLASS'; name='BNAME_CHARGEABLE'; options = @() }
         @{ displayName = 'building'; area = 'ADDRESS'; name='BUILDING'; options = @('default') }
-        @{ displayName = 'BUILDING_P'; area = 'ADDRESS'; name='BUILDING_P'; options = @() }
+        @{ displayName = 'BUILDING_P'; area = 'ADDRESS'; name='BUILDING_P'; options = @('create','update') }
         @{ displayName = 'BUILD_LONG'; area = 'ADDRESS'; name='BUILD_LONG'; options = @() }
         @{ displayName = 'CATTKENNZ'; area = 'DEFAULTS'; name='CATTKENNZ'; options = @() }
         @{ displayName = 'CHCKSTATUS'; area = 'ADDRESS'; name='CHCKSTATUS'; options = @() }
-        @{ displayName = 'city'; area = 'ADDRESS'; name='CITY'; options = @('default') }
+        @{ displayName = 'city'; area = 'ADDRESS'; name='CITY'; options = @('default','create','update') }
         @{ displayName = 'CITY_NO'; area = 'ADDRESS'; name='CITY_NO'; options = @() }
-        @{ displayName = 'CLASS'; area = 'LOGONDATA'; name='CLASS'; options = @() }
+        @{ displayName = 'CLASS'; area = 'LOGONDATA'; name='CLASS'; options = @('create','update') }
+        @{ displayName = 'CLIENT'; area = 'UCLASS'; name='CLIENT'; options = @('default') }
         @{ displayName = 'CODVC'; area = 'LOGONDATA'; name='CODVC'; options = @() }
         @{ displayName = 'CODVN'; area = 'LOGONDATA'; name='CODVN'; options = @() }
         @{ displayName = 'CODVS'; area = 'LOGONDATA'; name='CODVS'; options = @() }
-        @{ displayName = 'COMM_TYPE'; area = 'ADDRESS'; name='COMM_TYPE'; options = @() }
+        @{ displayName = 'COMM_TYPE'; area = 'ADDRESS'; name='COMM_TYPE'; options = @('create','update') }
         @{ displayName = 'COUNTRY'; area = 'ADDRESS'; name='COUNTRY'; options = @() }
         @{ displayName = 'COUNTRYISO'; area = 'ADDRESS'; name='COUNTRYISO'; options = @() }
         @{ displayName = 'COUNTY'; area = 'ADDRESS'; name='COUNTY'; options = @() }
         @{ displayName = 'COUNTY_CODE'; area = 'ADDRESS'; name='COUNTY_CODE'; options = @() }
+        @{ displayName = 'COUNTRY_SURCHARGE'; area = 'UCLASS'; name='COUNTRY_SURCHARGE'; options = @() }
         @{ displayName = 'C_O_NAME'; area = 'ADDRESS'; name='C_O_NAME'; options = @() }
-        @{ displayName = 'DATFM'; area = 'DEFAULTS'; name='DATFM'; options = @() }
-        @{ displayName = 'DCPFM'; area = 'DEFAULTS'; name='DCPFM'; options = @() }
+        @{ displayName = 'DATFM'; area = 'DEFAULTS'; name='DATFM'; options = @('create','update') }
+        @{ displayName = 'DCPFM'; area = 'DEFAULTS'; name='DCPFM'; options = @('create','update') }
         @{ displayName = 'DELIV_DIS'; area = 'ADDRESS'; name='DELIV_DIS'; options = @() }
         @{ displayName = 'DELI_SERV_NUMBER'; area = 'ADDRESS'; name='DELI_SERV_NUMBER'; options = @() }
         @{ displayName = 'DELI_SERV_TYPE'; area = 'ADDRESS'; name='DELI_SERV_TYPE'; options = @() }
-        @{ displayName = 'department'; area = 'ADDRESS'; name='DEPARTMENT'; options = @('default') }
+        @{ displayName = 'department'; area = 'ADDRESS'; name='DEPARTMENT'; options = @('default','create','update') }
         @{ displayName = 'DISTRCT_NO'; area = 'ADDRESS'; name='DISTRCT_NO'; options = @() }
         @{ displayName = 'DISTRICT'; area = 'ADDRESS'; name='DISTRICT'; options = @() }
         @{ displayName = 'DONT_USE_P'; area = 'ADDRESS'; name='DONT_USE_P'; options = @() }
         @{ displayName = 'DONT_USE_S'; area = 'ADDRESS'; name='DONT_USE_S'; options = @() }
-        @{ displayName = 'E_MAIL'; area = 'ADDRESS'; name='E_MAIL'; options = @() }
-        @{ displayName = 'facsimile_extension'; area = 'ADDRESS'; name='FAX_EXTENS'; options = @('default') }
-        @{ displayName = 'facsimile_number'; area = 'ADDRESS'; name='FAX_NUMBER'; options = @('default') }
-        @{ displayName = 'first_name'; area = 'ADDRESS'; name='FIRSTNAME'; options = @('default') }
+        @{ displayName = 'E_MAIL'; area = 'ADDRESS'; name='E_MAIL'; options = @('default','create','update') }
+        @{ displayName = 'facsimile_extension'; area = 'ADDRESS'; name='FAX_EXTENS'; options = @('default','create','update') }
+        @{ displayName = 'facsimile_number'; area = 'ADDRESS'; name='FAX_NUMBER'; options = @('default','create','update') }
+        @{ displayName = 'first_name'; area = 'ADDRESS'; name='FIRSTNAME'; options = @('default','create','update') }
         @{ displayName = 'floor'; area = 'ADDRESS'; name='FLOOR'; options = @() }
-        @{ displayName = 'FLOOR_P'; area = 'ADDRESS'; name='FLOOR_P'; options = @() }
-        @{ displayName = 'full_name'; area = 'ADDRESS'; name='FULLNAME'; options = @('default') }
+        @{ displayName = 'FLOOR_P'; area = 'ADDRESS'; name='FLOOR_P'; options = @('create','update') }
+        @{ displayName = 'full_name'; area = 'ADDRESS'; name='FULLNAME'; options = @('default','create','update') }
         @{ displayName = 'FULLNAME_X'; area = 'ADDRESS'; name='FULLNAME_X'; options = @() }
-        @{ displayName = 'function'; area = 'ADDRESS'; name='FUNCTION'; options = @() }
+        @{ displayName = 'function'; area = 'ADDRESS'; name='FUNCTION'; options = @('create','update') }
         @{ displayName = 'GLOBAL_LOCK_STATE'; area = 'ISLOCKED'; name='GLOBAL_LOCK_STATE'; options = @('default') }
-        @{ displayName = 'vaild_to'; area = 'LOGONDATA'; name='GLTGB'; options = @('default') }
-        @{ displayName = 'valid_from'; area = 'LOGONDATA'; name='GLTGV'; options = @('default') }
-        @{ displayName = 'scn_permit_sap_gui_checkbox'; area = 'SNC'; name='GUIFLAG'; options = @('default') }
+        @{ displayName = 'vaild_to'; area = 'LOGONDATA'; name='GLTGB'; options = @('default','create','update') }
+        @{ displayName = 'valid_from'; area = 'LOGONDATA'; name='GLTGV'; options = @('default','create','update') }
+        @{ displayName = 'scn_permit_sap_gui_checkbox'; area = 'SNC'; name='GUIFLAG'; options = @('default','create','update') }
         @{ displayName = 'HOMECITYNO'; area = 'ADDRESS'; name='HOMECITYNO'; options = @() }
         @{ displayName = 'HOME_CITY'; area = 'ADDRESS'; name='HOME_CITY'; options = @() }
-        @{ displayName = 'house'; area = 'ADDRESS'; name='HOUSE_NO'; options = @('default') }
+        @{ displayName = 'house'; area = 'ADDRESS'; name='HOUSE_NO'; options = @('default','create','update') }
         @{ displayName = 'HOUSE_NO2'; area = 'ADDRESS'; name='HOUSE_NO2'; options = @() }
         @{ displayName = 'HOUSE_NO3'; area = 'ADDRESS'; name='HOUSE_NO3'; options = @() }
         @{ displayName = 'INHOUSE_ML'; area = 'ADDRESS'; name='INHOUSE_ML'; options = @() }
-        @{ displayName = 'initials'; area = 'ADDRESS'; name='INITIALS'; options = @('default') }
+        @{ displayName = 'initials'; area = 'ADDRESS'; name='INITIALS'; options = @('default','create','update') }
         @{ displayName = 'INITS_SIG'; area = 'ADDRESS'; name='INITS_SIG'; options = @() }
-        @{ displayName = 'cost_center'; area = 'DEFAULTS'; name='KOSTL'; options = @('default') }
-        @{ displayName = 'language'; area = 'ADDRESS'; name='LANGU'; options = @('default') }
+        @{ displayName = 'cost_center'; area = 'DEFAULTS'; name='KOSTL'; options = @('default','create','update') }
+        @{ displayName = 'language'; area = 'ADDRESS'; name='LANGU'; options = @('default','create','update') }
         @{ displayName = 'LANGUCPISO'; area = 'ADDRESS'; name='LANGUCPISO'; options = @() }
         @{ displayName = 'LANGUP_ISO'; area = 'ADDRESS'; name='LANGUP_ISO'; options = @() }
         @{ displayName = 'LANGU_CR_P'; area = 'ADDRESS'; name='LANGU_CR_P'; options = @() }
         @{ displayName = 'LANGU_ISO'; area = 'ADDRESS'; name='LANGU_ISO'; options = @() }
         @{ displayName = 'LANGU_P'; area = 'ADDRESS'; name='LANGU_P'; options = @() }
-        @{ displayName = 'last_name'; area = 'ADDRESS'; name='LASTNAME'; options = @('default') }
+        @{ displayName = 'last_name'; area = 'ADDRESS'; name='LASTNAME'; options = @('default','create','update') }
+        @{ displayName = 'LIC_TYPE'; area = 'UCLASS'; name='LIC_TYPE'; options = @('default','create','update') }
         @{ displayName = 'LOCAL_LOCK_STATE'; area = 'ISLOCKED'; name='LOCAL_LOCK_STATE'; options = @('default') }
         @{ displayName = 'LOCATION'; area = 'ADDRESS'; name='LOCATION'; options = @() }
         @{ displayName = 'LOCK_STATE'; area = 'ISLOCKED'; name='LOCK_STATE'; options = @('default') }
         @{ displayName = 'LTIME'; area = 'LOGONDATA'; name='LTIME'; options = @() }
-        @{ displayName = 'middle_name'; area = 'ADDRESS'; name='MIDDLENAME'; options = @('default') }
+        @{ displayName = 'middle_name'; area = 'ADDRESS'; name='MIDDLENAME'; options = @('default','create','update') }
         @{ displayName = 'NAMCOUNTRY'; area = 'ADDRESS'; name='NAMCOUNTRY'; options = @() }
         @{ displayName = 'NAME'; area = 'ADDRESS'; name='NAME'; options = @() }
         @{ displayName = 'NAMEFORMAT'; area = 'ADDRESS'; name='NAMEFORMAT'; options = @() }
@@ -198,7 +204,7 @@ $Global:Properties = @{
         @{ displayName = 'PERS_NO'; area = 'ADDRESS'; name='PERS_NO'; options = @() }
         @{ displayName = 'secure_network_communication'; area = 'SNC'; name='PNAME'; options = @('default') }
         @{ displayName = 'POBOX_CTRY'; area = 'ADDRESS'; name='POBOX_CTRY'; options = @() }
-        @{ displayName = 'postal_code'; area = 'ADDRESS'; name='POSTL_COD1'; options = @('default') }
+        @{ displayName = 'postal_code'; area = 'ADDRESS'; name='POSTL_COD1'; options = @('default','create','update') }
         @{ displayName = 'POSTL_COD2'; area = 'ADDRESS'; name='POSTL_COD2'; options = @() }
         @{ displayName = 'POSTL_COD3'; area = 'ADDRESS'; name='POSTL_COD3'; options = @() }
         @{ displayName = 'PO_BOX'; area = 'ADDRESS'; name='PO_BOX'; options = @() }
@@ -213,28 +219,32 @@ $Global:Properties = @{
         @{ displayName = 'REGIOGROUP'; area = 'ADDRESS'; name='REGIOGROUP'; options = @() }
         @{ displayName = 'REGION'; area = 'ADDRESS'; name='REGION'; options = @() }
         @{ displayName = 'room_number'; area = 'ADDRESS'; name='ROOM_NO'; options = @('default') }
-        @{ displayName = 'ROOM_NO_P'; area = 'ADDRESS'; name='ROOM_NO_P'; options = @() }
+        @{ displayName = 'ROOM_NO_P'; area = 'ADDRESS'; name='ROOM_NO_P'; options = @('create','update') }
         @{ displayName = 'SECONDNAME'; area = 'ADDRESS'; name='SECONDNAME'; options = @() }
         @{ displayName = 'SECURITY_POLICY'; area = 'LOGONDATA'; name='SECURITY_POLICY'; options = @('default') }
         @{ displayName = 'SORT1'; area = 'ADDRESS'; name='SORT1'; options = @() }
         @{ displayName = 'SORT1_P'; area = 'ADDRESS'; name='SORT1_P'; options = @() }
         @{ displayName = 'SORT2'; area = 'ADDRESS'; name='SORT2'; options = @() }
         @{ displayName = 'SORT2_P'; area = 'ADDRESS'; name='SORT2_P'; options = @() }
-        @{ displayName = 'delete_after_output'; area = 'DEFAULTS'; name='SPDA'; options = @('default') }
-        @{ displayName = 'output_immediately'; area = 'DEFAULTS'; name='SPDB'; options = @('default') }
-        @{ displayName = 'spool_output_service'; area = 'DEFAULTS'; name='SPLD'; options = @('default') }
+        @{ displayName = 'delete_after_output'; area = 'DEFAULTS'; name='SPDA'; options = @('default','create','update') }
+        @{ displayName = 'output_immediately'; area = 'DEFAULTS'; name='SPDB'; options = @('default','create','update') }
+        @{ displayName = 'spool_output_service'; area = 'DEFAULTS'; name='SPLD'; options = @('default','create','update') }
+        @{ displayName = 'SPEC_VERS'; area = 'UCLASS'; name='SPEC_VERS'; options = @() }
         @{ displayName = 'SPLG'; area = 'DEFAULTS'; name='SPLG'; options = @() }
         @{ displayName = 'START_MENU'; area = 'DEFAULTS'; name='START_MENU'; options = @() }
         @{ displayName = 'STCOD'; area = 'DEFAULTS'; name='STCOD'; options = @() }
-        @{ displayName = 'street'; area = 'ADDRESS'; name='STREET'; options = @('default') }
+        @{ displayName = 'street'; area = 'ADDRESS'; name='STREET'; options = @('default','create','update') }
         @{ displayName = 'STREET_NO'; area = 'ADDRESS'; name='STREET_NO'; options = @() }
         @{ displayName = 'STR_ABBR'; area = 'ADDRESS'; name='STR_ABBR'; options = @() }
         @{ displayName = 'STR_SUPPL1'; area = 'ADDRESS'; name='STR_SUPPL1'; options = @() }
         @{ displayName = 'STR_SUPPL2'; area = 'ADDRESS'; name='STR_SUPPL2'; options = @() }
         @{ displayName = 'STR_SUPPL3'; area = 'ADDRESS'; name='STR_SUPPL3'; options = @() }
+        @{ displayName = 'SUBSTITUTE_FROM'; area = 'UCLASS'; name='SUBSTITUTE_FROM'; options = @() }
+        @{ displayName = 'SUBSTITUTE_UNTIL'; area = 'UCLASS'; name='SUBSTITUTE_UNTIL'; options = @() }
+        @{ displayName = 'SYSID'; area = 'UCLASS'; name='SYSID'; options = @() }
         @{ displayName = 'TAXJURCODE'; area = 'ADDRESS'; name='TAXJURCODE'; options = @() }
-        @{ displayName = 'telephone_extension'; area = 'ADDRESS'; name='TEL1_EXT'; options = @('default') }
-        @{ displayName = 'telephone_number'; area = 'ADDRESS'; name='TEL1_NUMBR'; options = @('default') }
+        @{ displayName = 'telephone_extension'; area = 'ADDRESS'; name='TEL1_EXT'; options = @('default','create','update') }
+        @{ displayName = 'telephone_number'; area = 'ADDRESS'; name='TEL1_NUMBR'; options = @('default','create','update') }
         @{ displayName = 'TIMEFM'; area = 'DEFAULTS'; name='TIMEFM'; options = @() }
         @{ displayName = 'TIME_ZONE'; area = 'ADDRESS'; name='TIME_ZONE'; options = @() }
         @{ displayName = 'TITLE'; area = 'ADDRESS'; name='TITLE'; options = @() }
@@ -254,8 +264,9 @@ $Global:Properties = @{
     UserRole = @(
         @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
         @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default') }
-        @{ displayName = 'FRM_DATE'; name='FRM_DATE'; options = @('default') }
-        @{ displayName = 'TO_DATE'; name='TO_DATE'; options = @('default') }
+        @{ displayName = 'AGR_TEXT'; name='AGR_TEXT'; options = @('default') }
+        @{ displayName = 'FROM_DATE'; name='FROM_DAT'; options = @('default') }
+        @{ displayName = 'TO_DATE'; name='TO_DAT'; options = @('default') }
         @{ displayName = 'ORG_FLAG'; name='ORG_FLAG'; options = @('default') }
     )
     UserParameterHT = [System.Collections.ArrayList]@()
@@ -293,6 +304,8 @@ $Global:Properties = @{
 
 $Global:Properties.User | ForEach-Object { $Global:Properties.UserHT.Add([PSCustomObject]$_) > $null }
 $Global:Properties.UserHT = $Global:Properties.UserHT | Group-Object name -AsHashTable
+$Global:Properties.User | ForEach-Object { $Global:Properties.UserInvertHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserInvertHT = $Global:Properties.UserInvertHT | Group-Object displayName -AsHashTable
 $Global:Properties.UserRole | ForEach-Object { $Global:Properties.UserRoleHT.Add([PSCustomObject]$_) > $null }
 $Global:Properties.UserRoleHT = $Global:Properties.UserRoleHT | Group-Object name -AsHashTable
 $Global:Properties.UserParameter | ForEach-Object { $Global:Properties.UserParameterHT.Add([PSCustomObject]$_) > $null }
@@ -311,7 +324,7 @@ $Global:UserRole = [System.Collections.ArrayList]@()
 $Global:UserParameter = [System.Collections.ArrayList]@()
 $Global:UserProfile = [System.Collections.ArrayList]@()
 
-function Idm-UserRead {
+function Idm-UsersRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -356,9 +369,8 @@ function Idm-UserRead {
                 $bapiFunctionCall.SetValue("MAX_ROWS",99999)
                 $bapiFunctionCall.Invoke($Global:Connection)
                 [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('USERLIST')
-
+                $i = $returnData.Count
                 Log info "Retrieving User Details"
-                $i = $returnData.count
 
                 foreach($item in $returnData) {
                     $obj = @{
@@ -377,27 +389,33 @@ function Idm-UserRead {
                     #Address (Export)
                     $export = $bapiFunctionCall2.GetObject('ADDRESS')
                     foreach($prop in $export) {
-                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        try { $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name) } catch { Log warn "ADDRESS UCLASS property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                     }
 
                     #SNC (Export)
                     $export = $bapiFunctionCall2.GetObject('SNC')
                     foreach($prop in $export) {
-                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        try { $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name) } catch { Log warn "SNC property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                     }
 
                     #Logondata (Export)
                     $export = $bapiFunctionCall2.GetObject('LOGONDATA')
                     foreach($prop in $export) {
-                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        try { $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name) } catch { Log warn "LOGONDATA property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                     }
 
                     #Defaults (Export)
                     $export = $bapiFunctionCall2.GetObject('DEFAULTS')
                     foreach($prop in $export) {
-                        $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name)
+                        try { $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name) } catch { Log warn "DEFAULTS property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                     }
-
+                    
+                    #UCLASS (Export)
+                    $export = $bapiFunctionCall2.GetObject('UCLASS')
+                    foreach($prop in $export) {
+                        try { $obj[$Global:Properties.UserHT[$prop.Metadata.Name].displayName] = $export.GetValue($prop.Metadata.Name) } catch { Log warn "UCLASS property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
+                    }
+                    
                     #ISLOCKED (Export)
                     $export = $bapiFunctionCall2.GetObject('ISLOCKED')
                     if($export.GetValue('WRNG_LOGON') -eq "L") {
@@ -426,7 +444,7 @@ function Idm-UserRead {
                             $Global:Properties.UserRoleHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
                         }
                         foreach($prop in $row) {
-                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                            try { $table_obj[$Global:Properties.UserRoleHT[$prop.Metadata.Name].displayName] = $row.GetValue($prop.Metadata.Name) } catch { Log warn "User Roles property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                         }
                         [void]$Global:UserRole.Add([PSCustomObject]$table_obj);
                     } 
@@ -438,7 +456,7 @@ function Idm-UserRead {
                             $Global:Properties.UserParameterHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
                         }
                         foreach($prop in $row) {
-                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                            try { $table_obj[$Global:Properties.UserParameterHT[$prop.Metadata.Name].displayName] = $row.GetValue($prop.Metadata.Name) } catch { Log warn "User Parameters property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                         }
                         [void]$Global:UserParameter.Add([PSCustomObject]$table_obj);
                     } 
@@ -450,7 +468,7 @@ function Idm-UserRead {
                             $Global:Properties.UserProfileHT["USERNAME"].displayName = $obj[$Global:Properties.UserHT["USERNAME"].displayName]
                         }
                         foreach($prop in $row) {
-                            $table_obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+                            try { $table_obj[$Global:Properties.UserProfileHT[$prop.Metadata.Name].displayName] = $row.GetValue($prop.Metadata.Name) } catch { Log warn "User Profiles property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                         }
                         [void]$Global:UserProfile.Add([PSCustomObject]$table_obj);
                     } 
@@ -458,7 +476,7 @@ function Idm-UserRead {
                     if(($i -= 1) % 100 -eq 0) {
                         Log debug ("$($i) remaining user details to retrieve")
                     }
-
+                    
                     $ret = ([PSCustomObject]$obj) | Select-Object $displayProperties
                     [void]$Global:User.Add($ret);
                     
@@ -471,6 +489,118 @@ function Idm-UserRead {
 
     Log info "Done"
 }
+
+function Idm-UserCreate {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "User"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'create'
+            parameters = @(
+                @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $connection_params = ConvertSystemParams -Connection $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $obj = @{}
+
+        foreach($prop in $properties.PSObject.properties) {
+            $obj[$Global:UserInvertHT[$prop.Name].name] = $prop.Value
+        }
+
+        LogIO info "BAPI_USER_CREATE1" -In @connection_params -Identity $function_params.($Global:Properties.UserHT["USERNAME"].displayName) -Properties $properties
+            #$rv = Set-ADUser-ADSI @connection_params -PassThru -Identity $function_params.objectGUID -Properties $properties
+        LogIO info "BAPI_USER_CREATE1" -Out $rv
+
+        $rv
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserUpdate {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "User"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'update'
+            parameters = @(
+                @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $connection_params = ConvertSystemParams -Connection $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+
+        LogIO info "BAPI_USER_CHANGE" -In @connection_params -Identity $function_params.($Global:Properties.UserHT["USERNAME"].displayName) -Properties $properties
+            #$rv = Set-ADUser-ADSI @connection_params -PassThru -Identity $function_params.objectGUID -Properties $properties
+        LogIO info "BAPI_USER_CHANGE" -Out $rv
+
+        $rv
+    }
+
+    Log info "Done"
+}
+
 
 function Idm-UserRolesRead {
     param (
@@ -510,7 +640,7 @@ function Idm-UserRolesRead {
         $displayProperties = $properties | ForEach-Object { $Global:Properties.UserRoleHT[$_].displayName }
 
         if($Global:User.count -lt 1) {
-            Idm-UserRead -SystemParams $SystemParams | Out-Null
+            Idm-UsersRead -SystemParams $SystemParams | Out-Null
         } 
 
         foreach($item in $Global:UserRole) {            
@@ -559,7 +689,7 @@ function Idm-UserParametersRead {
         $displayProperties = $properties | ForEach-Object { $Global:Properties.UserParameterHT[$_].displayName }
 
         if($Global:User.count -lt 1) {
-            Idm-UserRead -SystemParams $SystemParams | Out-Null
+            Idm-UsersRead -SystemParams $SystemParams | Out-Null
         } 
 
         foreach($item in $Global:UserParameter) {            
@@ -608,7 +738,7 @@ function Idm-UserProfilesRead {
         $displayProperties = $properties | ForEach-Object { $Global:Properties.UserProfileHT[$_].displayName }
 
         if($Global:User.count -lt 1) {
-            Idm-UserRead -SystemParams $SystemParams | Out-Null
+            Idm-UsersRead -SystemParams $SystemParams | Out-Null
         } 
 
         foreach($item in $Global:UserProfile) {            
@@ -619,7 +749,7 @@ function Idm-UserProfilesRead {
     Log info "Done"
 }
 
-function Idm-RoleRead {
+function Idm-RolesRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -684,7 +814,7 @@ function Idm-RoleRead {
     Log info "Done"
 }
 
-function Idm-ProfileRead {
+function Idm-ProfilesRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -727,7 +857,7 @@ function Idm-ProfileRead {
         foreach($item in $ret) {
             $obj = @{}
             foreach($prop in $item.PSObject.Properties) {
-                $obj[($Global:Properties.ProfileHT[$prop.Name]).displayName] = $prop.Value
+                try { $obj[($Global:Properties.ProfileHT[$prop.Name]).displayName] = $prop.Value } catch { Log warn "Profiles property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
             }
             ([PSCustomObject]$obj) | Select-Object $displayProperties
         }
@@ -736,7 +866,7 @@ function Idm-ProfileRead {
     Log info "Done"
 }
 
-function Idm-ParameterRead {
+function Idm-ParametersRead {
     param (
         [switch] $GetMeta,
         [string] $SystemParams,
@@ -779,7 +909,7 @@ function Idm-ParameterRead {
         foreach($item in $ret) {
             $obj = @{}
             foreach($prop in $item.PSObject.Properties) {
-                $obj[($Global:Properties.ParameterHT[$prop.Name]).displayName] = $prop.Value
+                try { $obj[($Global:Properties.ParameterHT[$prop.Name]).displayName] = $prop.Value  } catch { Log warn "Parameters property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
             }
             ([PSCustomObject]$obj) | Select-Object $displayProperties
         }
@@ -787,6 +917,10 @@ function Idm-ParameterRead {
 
     Log info "Done"
 }
+
+#
+# Supplemental functions
+#
 
 function Open-SAPConnection {
     param (
@@ -978,118 +1112,6 @@ Function Read-Table {
 
 }
 
-$configScenarios = @'
-[{"name":"Default","description":"Default Configuration","version":"1.0","createTime":1737128086413,
-"modifyTime":1737128086413,"name_values":[{"name":"Client","value":null},{"name":"Hostname","value":
-null},{"name":"Password","value":null},{"name":"SAPdllDirectoryPath","value":null},{"name":"SysId","
-value":null},{"name":"SysNr","value":null},{"name":"Username","value":null},{"name":"collections","v
-alue":["Parameter","Profile","Role","UserParameters","UserProfiles","User","UserRoles"]},{"name":"nr
-_of_sessions","value":null},{"name":"sessions_idle_timeout","value":null}],"collections":[{"col_name
-":"User","fields":[{"field_name":"Username","field_type":"string","include":true,"field_format":"","
-field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_nam
-e":"account_id","field_type":"string","include":true,"field_format":"","field_source":"data","javasc
-ript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"building","field_type":"
-string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
-ce":false,"ref_col_fields":[]},{"field_name":"city","field_type":"string","include":true,"field_form
-at":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"f
-ield_name":"department","field_type":"string","include":true,"field_format":"","field_source":"data"
-,"javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"facsimile_extens
-ion","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","r
-ef_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"facsimile_number","field_type":"str
-ing","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference"
-:false,"ref_col_fields":[]},{"field_name":"first_name","field_type":"string","include":true,"field_f
-ormat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},
-{"field_name":"full_name","field_type":"string","include":true,"field_format":"","field_source":"dat
-a","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"GLOBAL_LOCK_ST
-ATE","field_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","
-ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"vaild_to","field_type":"date","inc
-lude":true,"field_format":"yyyy-mm-dd (local)","field_source":"data","javascript":"","ref_col":[],"r
-eference":false,"ref_col_fields":[]},{"field_name":"valid_from","field_type":"date","include":true,"
-field_format":"yyyy-mm-dd (local)","field_source":"data","javascript":"","ref_col":[],"reference":fa
-lse,"ref_col_fields":[]},{"field_name":"scn_permit_sap_gui_checkbox","field_type":"string","include"
-:true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_co
-l_fields":[]},{"field_name":"house","field_type":"string","include":true,"field_format":"","field_so
-urce":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"init
-ials","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","
-ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"cost_center","field_type":"string"
-,"include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":fal
-se,"ref_col_fields":[]},{"field_name":"language","field_type":"string","include":true,"field_format"
-:"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"fiel
-d_name":"last_name","field_type":"string","include":true,"field_format":"","field_source":"data","ja
-vascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"LOCAL_LOCK_STATE","f
-ield_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","ref_col
-":[],"reference":false,"ref_col_fields":[]},{"field_name":"LOCK_STATE","field_type":"boolean","inclu
-de":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref
-_col_fields":[]},{"field_name":"middle_name","field_type":"string","include":true,"field_format":"",
-"field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_na
-me":"NO_PASSWORD_LOCK_STATE","field_type":"boolean","include":true,"field_format":"","field_source":
-"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"secure_net
-work_communication","field_type":"string","include":true,"field_format":"","field_source":"data","ja
-vascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"postal_code","field_
-type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"
-reference":false,"ref_col_fields":[]},{"field_name":"room_number","field_type":"string","include":tr
-ue,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_f
-ields":[]},{"field_name":"SECURITY_POLICY","field_type":"string","include":true,"field_format":"","f
-ield_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name
-":"delete_after_output","field_type":"string","include":true,"field_format":"","field_source":"data"
-,"javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"output_immediate
-ly","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","re
-f_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"spool_output_service","field_type":"
-string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
-ce":false,"ref_col_fields":[]},{"field_name":"street","field_type":"string","include":true,"field_fo
-rmat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{
-"field_name":"telephone_extension","field_type":"string","include":true,"field_format":"","field_sou
-rce":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"telep
-hone_number","field_type":"string","include":true,"field_format":"","field_source":"data","javascrip
-t":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"WRONG_LOGON_LOCK_STATE","fi
-eld_type":"boolean","include":true,"field_format":"","field_source":"data","javascript":"","ref_col"
-:[],"reference":false,"ref_col_fields":[]}],"key":"Username","display":"Username","name_values":[],"
-sys_nn":[],"source":"data"},{"col_name":"Parameter","fields":[{"field_name":"PARAMID","field_type":"
-string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"referen
-ce":false,"ref_col_fields":[]},{"field_name":"PARTEXT","field_type":"string","include":true,"field_f
-ormat":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}]
-,"key":"PARAMID","display":"PARAMID","name_values":[],"sys_nn":[],"source":"data"},{"col_name":"Prof
-ile","fields":[{"field_name":"PROFN","field_type":"string","include":true,"field_format":"","field_s
-ource":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"TYP
-","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_
-col":[],"reference":false,"ref_col_fields":[]}],"key":"PROFN","display":"PROFN","name_values":[],"sy
-s_nn":[],"source":"data"},{"col_name":"Role","fields":[{"field_name":"FLAG_COLL","field_type":"strin
-g","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":f
-alse,"ref_col_fields":[]},{"field_name":"AGR_NAME","field_type":"string","include":true,"field_forma
-t":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"fi
-eld_name":"TEXT","field_type":"string","include":true,"field_format":"","field_source":"data","javas
-cript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"key":"AGR_NAME","display":"AGR_NAME"
-,"name_values":[],"sys_nn":[],"source":"data"},{"col_name":"UserParameters","fields":[{"field_name":
-"Username","field_type":"string","include":true,"field_format":"","field_source":"data","javascript"
-:"","ref_col":["User"],"reference":false,"ref_col_fields":[]},{"field_name":"PARID","field_type":"st
-ring","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference
-":false,"ref_col_fields":[]},{"field_name":"PARTXT","field_type":"string","include":true,"field_form
-at":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"f
-ield_name":"PARVA","field_type":"string","include":true,"field_format":"","field_source":"data","jav
-ascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"display":"","name_values":[],"sys_
-nn":[],"source":"data"},{"col_name":"UserProfiles","fields":[{"field_name":"Username","field_type":"
-string","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":["User"],"r
-eference":false,"ref_col_fields":[]},{"field_name":"BAPIPROF","field_type":"string","include":true,"
-field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_field
-s":[]},{"field_name":"BAPIAKTPS","field_type":"string","include":true,"field_format":"","field_sourc
-e":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"BAPITYP
-E","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref
-_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"BAPIPTEXT","field_type":"string","inc
-lude":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"r
-ef_col_fields":[]}],"key":"","display":"","name_values":[],"sys_nn":[],"source":"data"},{"col_name":
-"UserRoles","fields":[{"field_name":"TO_DAT","field_type":"string","include":true,"field_format":"",
-"field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_na
-me":"AGR_NAME","field_type":"string","include":true,"field_format":"","field_source":"data","javascr
-ipt":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"Username","field_type":"s
-tring","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":["User"],"re
-ference":false,"ref_col_fields":[]},{"field_name":"ORG_FLAG","field_type":"string","include":true,"f
-ield_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields
-":[]},{"field_name":"FROM_DAT","field_type":"string","include":true,"field_format":"","field_source"
-:"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"AGR_TEXT"
-,"field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_c
-ol":[],"reference":false,"ref_col_fields":[]},{"field_name":"FRM_DATE","field_type":"string","includ
-e":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_
-col_fields":[]},{"field_name":"TO_DATE","field_type":"string","include":true,"field_format":"","fiel
-d_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]}],"key":"","disp
-lay":"","name_values":[],"sys_nn":[],"source":"data"}]}]
-'@
+#
+# Configuration
+#
