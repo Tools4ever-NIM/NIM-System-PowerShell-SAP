@@ -131,7 +131,7 @@ $Global:Properties = @{
         @{ displayName = 'CHCKSTATUS'; area = 'ADDRESS'; name='CHCKSTATUS'; options = @() }
         @{ displayName = 'city'; area = 'ADDRESS'; name='CITY'; options = @('default','create','update') }
         @{ displayName = 'CITY_NO'; area = 'ADDRESS'; name='CITY_NO'; options = @() }
-        @{ displayName = 'CLASS'; area = 'LOGONDATA'; name='CLASS'; options = @('create','update') }
+        @{ displayName = 'CLASS'; area = 'LOGONDATA'; name='CLASS'; options = @('default','create','update') }
         @{ displayName = 'CLIENT'; area = 'UCLASS'; name='CLIENT'; options = @('default') }
         @{ displayName = 'CODVC'; area = 'LOGONDATA'; name='CODVC'; options = @() }
         @{ displayName = 'CODVN'; area = 'LOGONDATA'; name='CODVN'; options = @() }
@@ -646,11 +646,22 @@ function Idm-UserUpdate {
         [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
         
         [SAP.Middleware.Connector.IRfcStructure]$userPassword = $userUpdate.GetStructure("PASSWORD")
+        [SAP.Middleware.Connector.IRfcStructure]$userPasswordX = $userUpdate.GetStructure("PASSWORDX")
+
         [SAP.Middleware.Connector.IRfcStructure]$userAddress = $userUpdate.GetStructure("ADDRESS")
+        [SAP.Middleware.Connector.IRfcStructure]$userAddressX = $userUpdate.GetStructure("ADDRESSX")
+
         [SAP.Middleware.Connector.IRfcStructure]$userDefaults = $userUpdate.GetStructure("DEFAULTS")
+        [SAP.Middleware.Connector.IRfcStructure]$userDefaultsX = $userUpdate.GetStructure("DEFAULTSX")
+
         [SAP.Middleware.Connector.IRfcStructure]$userLogonData = $userUpdate.GetStructure("LOGONDATA")
+        [SAP.Middleware.Connector.IRfcStructure]$userLogonDataX = $userUpdate.GetStructure("LOGONDATAX")
+
         [SAP.Middleware.Connector.IRfcStructure]$userSNC = $userUpdate.GetStructure("SNC")
+        [SAP.Middleware.Connector.IRfcStructure]$userSNCX = $userUpdate.GetStructure("SNCX")
+
         [SAP.Middleware.Connector.IRfcStructure]$userUClass = $userUpdate.GetStructure("UCLASS")
+        [SAP.Middleware.Connector.IRfcStructure]$userUClassX = $userUpdate.GetStructure("UCLASSX")
 
         foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
             try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
@@ -668,19 +679,16 @@ function Idm-UserUpdate {
                 switch($field.area) {
                     #Parse Outside of switch     
                     {$_ -in @('BAPIPWD','CODVN')} { continue }
-                    
-                    #Datetime Fields
-                    # Maybe needed for GLTGV and GLTGB
 
                     #Boolean Fields
                     {$_ -eq 'SNC' -and $field.name -eq 'GUIFLAG'} { $userSNC.SetValue('GUIFLAG',($PropValue -eq 'X'))}
                     
                     #Direct Mapping
-                    'ADDRESS'   { $userAddress.SetValue($field.name,$prop.Value); Log info "[$($field.Name)] - [$($prop.Value)]" }
-                    'SNC'       { $userSNC.SetValue($field.name,$prop.Value) }
-                    'DEFAULTS'  { $userDefaults.SetValue($field.name,$prop.Value) }
-                    'LOGONDATA' { $userLogonData.SetValue($field.name,$prop.Value) }
-                    'UCLASS'    { $userUClass.SetValue($field.name,$prop.Value) }
+                    'ADDRESS'   { $userAddress.SetValue($field.name,$prop.Value); $userAddressX.SetValue($field.name,'X'); }
+                    'SNC'       { $userSNC.SetValue($field.name,$prop.Value); $userSNCX.SetValue($field.name,'X');  }
+                    'DEFAULTS'  { $userDefaults.SetValue($field.name,$prop.Value); $userDefaultsX.SetValue($field.name,'X');  }
+                    'LOGONDATA' { $userLogonData.SetValue($field.name,$prop.Value); $userLogonDataX.SetValue($field.name,'X');  }
+                    'UCLASS'    { $userUClass.SetValue($field.name,$prop.Value); $userUClassX.SetValue('UCLASS','X')  }
                     
                     #Failback
                     default { LogIO warn $function -Out "[$($field.name)] in [$($field.area)] does not have a connector mapping for user create, skipping" }
@@ -691,9 +699,12 @@ function Idm-UserUpdate {
         #Parse password Options
         if($user.disable_password) {
             $userLogonData.SetValue('CODVN','X')
+            $userLogonDataX.SetValue('CODVN','X')
             $userPassword.SetValue('BAPIPWD','')
+            $userPasswordX.SetValue('BAPIPWD','X')
         } elseif ($user.BAPIPWD.length -gt 0) {
             $userPassword.SetValue('BAPIPWD',$Properties.BAPIPWD)
+            $userPasswordX.SetValue('BAPIPWD','X')
         }
         
         $userUpdate.Invoke($Global:Connection)
