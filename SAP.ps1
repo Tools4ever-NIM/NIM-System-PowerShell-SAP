@@ -262,12 +262,14 @@ $Global:Properties = @{
         @{ displayName = 'XPCPT'; area = 'ADDRESS'; name='XPCPT'; options = @() }
     )
     UserRoleHT = [System.Collections.ArrayList]@()
+    UserRoleInvertHT = [System.Collections.ArrayList]@()
     UserRole = @(
-        @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
-        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default') }
+        @{ displayName = 'ID'; name='ID'; options = @('default','key') }
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','create') }
+        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default','create') }
         @{ displayName = 'AGR_TEXT'; name='AGR_TEXT'; options = @('default') }
-        @{ displayName = 'FROM_DATE'; name='FROM_DAT'; options = @('default') }
-        @{ displayName = 'TO_DATE'; name='TO_DAT'; options = @('default') }
+        @{ displayName = 'FROM_DATE'; name='FROM_DAT'; options = @('default','create') }
+        @{ displayName = 'TO_DATE'; name='TO_DAT'; options = @('default','create') }
         @{ displayName = 'ORG_FLAG'; name='ORG_FLAG'; options = @('default') }
     )
     UserParameterHT = [System.Collections.ArrayList]@()
@@ -303,21 +305,21 @@ $Global:Properties = @{
     )
 }
 
-$Global:Properties.User | ForEach-Object { $Global:Properties.UserHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.User | ForEach-Object { [void]$Global:Properties.UserHT.Add([PSCustomObject]$_); [void]$Global:Properties.UserInvertHT.Add([PSCustomObject]$_); }
 $Global:Properties.UserHT = $Global:Properties.UserHT | Group-Object name -AsHashTable
-$Global:Properties.User | ForEach-Object { $Global:Properties.UserInvertHT.Add([PSCustomObject]$_) > $null }
 $Global:Properties.UserInvertHT = $Global:Properties.UserInvertHT | Group-Object displayName -AsHashTable
-$Global:Properties.UserRole | ForEach-Object { $Global:Properties.UserRoleHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserRole | ForEach-Object { [void]$Global:Properties.UserRoleHT.Add([PSCustomObject]$_); [void]$Global:Properties.UserRoleInvertHT.Add([PSCustomObject]$_); }
 $Global:Properties.UserRoleHT = $Global:Properties.UserRoleHT | Group-Object name -AsHashTable
-$Global:Properties.UserParameter | ForEach-Object { $Global:Properties.UserParameterHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserRoleInvertHT = $Global:Properties.UserRoleInvertHT | Group-Object displayName -AsHashTable
+$Global:Properties.UserParameter | ForEach-Object { [void]$Global:Properties.UserParameterHT.Add([PSCustomObject]$_) }
 $Global:Properties.UserParameterHT = $Global:Properties.UserParameterHT | Group-Object name -AsHashTable
-$Global:Properties.UserProfile | ForEach-Object { $Global:Properties.UserProfileHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.UserProfile | ForEach-Object { [void]$Global:Properties.UserProfileHT.Add([PSCustomObject]$_) }
 $Global:Properties.UserProfileHT = $Global:Properties.UserProfileHT | Group-Object name -AsHashTable
-$Global:Properties.Role | ForEach-Object { $Global:Properties.RoleHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.Role | ForEach-Object { [void]$Global:Properties.RoleHT.Add([PSCustomObject]$_) }
 $Global:Properties.RoleHT = $Global:Properties.RoleHT | Group-Object name -AsHashTable
-$Global:Properties.Profile | ForEach-Object { $Global:Properties.ProfileHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.Profile | ForEach-Object { [void]$Global:Properties.ProfileHT.Add([PSCustomObject]$_) }
 $Global:Properties.ProfileHT = $Global:Properties.ProfileHT | Group-Object name -AsHashTable
-$Global:Properties.Parameter | ForEach-Object { $Global:Properties.ParameterHT.Add([PSCustomObject]$_) > $null }
+$Global:Properties.Parameter | ForEach-Object { [void]$Global:Properties.ParameterHT.Add([PSCustomObject]$_) }
 $Global:Properties.ParameterHT = $Global:Properties.ParameterHT | Group-Object name -AsHashTable
 
 $Global:User = [System.Collections.ArrayList]@()
@@ -939,8 +941,123 @@ function Idm-UserRolesRead {
         } 
 
         foreach($item in $Global:UserRole) {            
-            $item | Select-Object $displayProperties
+            $obj = @{ ID = ("{0}.{1}" -f $item.($Global:Properties.UserRoleHT['USERNAME'].displayName), $item.($Global:Properties.UserRoleHT['AGR_NAME'].displayName) )}
+            foreach($prop in $item.PSObject.Properties) {
+                $obj[$prop.Name] = $prop.Value
+            }
+
+            ([PSCustomObject]$obj) | Select-Object $displayProperties 
         }
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserRolesCreate {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserRole"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'create'
+            parameters = @(
+                $Global:Properties.$Class | Where-Object { $_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' } }  
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_ACTGROUPS_ASSIGN'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+
+        #Retrieve existing roles
+        [SAP.Middleware.Connector.IRfcFunction]$bapiUserGetDetail = $repository.CreateFunction("BAPI_USER_GET_DETAIL")
+        $bapiUserGetDetail.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        $bapiUserGetDetail.Invoke($Global:Connection)
+
+        $userRoles = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$roles = $bapiUserGetDetail.GetTable("ACTIVITYGROUPS")
+        foreach ($record in $roles) {
+            if ($null -ne $record.GetValue("ORG_FLAG")) {
+                $flag_coll = $record.GetValue("ORG_FLAG")
+                if ($flag_coll -eq "C") {
+                    continue
+                }
+            }
+
+            $role = [PSCustomObject]@{
+                "AGR_NAME"  = $record.GetValue("AGR_NAME")
+                "AGR_TEXT"  = $record.GetValue("AGR_TEXT")
+                "FROM_DAT"  = $record.GetValue("FROM_DAT")
+                "TO_DAT"    = $record.GetValue("TO_DAT")
+                "FLAG_COLL" = $record.GetValue("ORG_FLAG")
+            }
+            [void]$userRoles.Add($role)
+        }
+        
+        #Provision new role
+        [SAP.Middleware.Connector.IRfcFunction]$userAddRole = $repository.CreateFunction($function)
+        $userAddRole.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        [SAP.Middleware.Connector.IRfcTable]$roles = $userAddRole.GetTable("ACTIVITYGROUPS")
+        
+        #Add existing roles
+        foreach ($line in $UserRoles) {
+            $roles.Append()
+            $roles.SetValue("AGR_NAME", $line.AGR_NAME) 
+            $roles.SetValue("AGR_TEXT", $line.AGR_TEXT) 
+            $roles.SetValue("ORG_FLAG", $line.FLAG_COLL) 
+            $roles.SetValue("FROM_DAT", $line.FROM_DAT)   
+            $roles.SetValue("TO_DAT", $line.TO_DAT)     
+        }
+
+        #Add New Role
+        $roles.Append()
+        $rv = @{}
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            $rv[$prop.Name] = $prop.Value
+            try { $field = $Global:Properties.UserRoleInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user role, skipping"}
+
+            if($field.Name -eq 'USERNAME') { continue }
+            $roles.SetValue($field.name,$prop.Value)
+        }
+        
+        $userAddRole.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userAddRole -Context $function
+        LogIO info $function
+
+        $rv['ID'] = ("{0}.{1}" -f $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName), $properties.($Global:Properties.UserRoleHT['AGR_NAME'].displayName))
+
+        [PSCustomObject]$rv
     }
 
     Log info "Done"
