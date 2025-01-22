@@ -265,8 +265,8 @@ $Global:Properties = @{
     UserRoleInvertHT = [System.Collections.ArrayList]@()
     UserRole = @(
         @{ displayName = 'ID'; name='ID'; options = @('default','key') }
-        @{ displayName = 'Username'; name='USERNAME'; options = @('default','create') }
-        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default','create') }
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','create','delete') }
+        @{ displayName = 'AGR_NAME'; name='AGR_NAME'; options = @('default','create','delete') }
         @{ displayName = 'AGR_TEXT'; name='AGR_TEXT'; options = @('default') }
         @{ displayName = 'FROM_DATE'; name='FROM_DAT'; options = @('default','create') }
         @{ displayName = 'TO_DATE'; name='TO_DAT'; options = @('default','create') }
@@ -1058,6 +1058,106 @@ function Idm-UserRolesCreate {
         $rv['ID'] = ("{0}.{1}" -f $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName), $properties.($Global:Properties.UserRoleHT['AGR_NAME'].displayName))
 
         [PSCustomObject]$rv
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserRolesDelete {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserRole"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'delete'
+            parameters = @(
+                $Global:Properties.$Class | Where-Object { $_.options.Contains('key') -or $_.options.Contains('delete') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' } }  
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('delete') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_ACTGROUPS_ASSIGN'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+
+        #Retrieve existing roles
+        [SAP.Middleware.Connector.IRfcFunction]$bapiUserGetDetail = $repository.CreateFunction("BAPI_USER_GET_DETAIL")
+        $bapiUserGetDetail.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        $bapiUserGetDetail.Invoke($Global:Connection)
+
+        $userRoles = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$roles = $bapiUserGetDetail.GetTable("ACTIVITYGROUPS")
+        foreach ($record in $roles) {
+            if ($null -ne $record.GetValue("ORG_FLAG")) {
+                $flag_coll = $record.GetValue("ORG_FLAG")
+                if ($flag_coll -eq "C") {
+                    continue
+                }
+            }
+
+            $role = [PSCustomObject]@{
+                "AGR_NAME"  = $record.GetValue("AGR_NAME")
+                "AGR_TEXT"  = $record.GetValue("AGR_TEXT")
+                "FROM_DAT"  = $record.GetValue("FROM_DAT")
+                "TO_DAT"    = $record.GetValue("TO_DAT")
+                "FLAG_COLL" = $record.GetValue("ORG_FLAG")
+            }
+            [void]$userRoles.Add($role)
+        }
+        
+        #Provision new role
+        [SAP.Middleware.Connector.IRfcFunction]$userDeleteRole = $repository.CreateFunction($function)
+        $userDeleteRole.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        [SAP.Middleware.Connector.IRfcTable]$roles = $userDeleteRole.GetTable("ACTIVITYGROUPS")
+        
+        #Add existing roles
+        foreach ($line in $UserRoles) {
+            #Skip Role to be removed
+            if($line.AGR_NAME -eq $properties.($Global:Properties.UserRoleHT['AGR_NAME'].displayName)) { continue }
+
+            $roles.Append()
+            $roles.SetValue("AGR_NAME", $line.AGR_NAME) 
+            $roles.SetValue("AGR_TEXT", $line.AGR_TEXT) 
+            $roles.SetValue("ORG_FLAG", $line.FLAG_COLL) 
+            $roles.SetValue("FROM_DAT", $line.FROM_DAT)   
+            $roles.SetValue("TO_DAT", $line.TO_DAT)     
+        }
+        
+        $userDeleteRole.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userDeleteRole -Context $function
+        LogIO info $function
+
+        $properties
     }
 
     Log info "Done"
