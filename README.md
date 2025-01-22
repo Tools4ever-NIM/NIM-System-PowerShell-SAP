@@ -13,8 +13,12 @@
 # Actions
 - User
     - Create/Update/Delete
+    - Lock/Unlock
+- UserParameters
+    - Create/Delete
 - UserRoles
-	- Add/Remove
+    - Add/Remove
+
  
 # NIM Docs
 The official NIM documentation can be found at: https://docs.nimsuite.com
