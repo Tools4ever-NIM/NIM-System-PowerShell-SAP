@@ -273,11 +273,13 @@ $Global:Properties = @{
         @{ displayName = 'ORG_FLAG'; name='ORG_FLAG'; options = @('default') }
     )
     UserParameterHT = [System.Collections.ArrayList]@()
+    UserParameterInvertHT = [System.Collections.ArrayList]@()
     UserParameter = @(
-        @{ displayName = 'Username'; name='USERNAME'; options = @('default','key') }
-        @{ displayName = 'parid'; name='parid'; options = @('default') }
-        @{ displayName = 'parva'; name='parva'; options = @('default') }
-        @{ displayName = 'partxt'; name='partxt'; options = @('default') }
+        @{ displayName = 'ID'; name='ID'; options = @('default','key') }
+        @{ displayName = 'Username'; name='USERNAME'; options = @('default','create','delete') }
+        @{ displayName = 'PARID'; name='PARID'; options = @('default','create','delete') }
+        @{ displayName = 'PARVA'; name='PARVA'; options = @('default') }
+        @{ displayName = 'PARTXT'; name='PARTXT'; options = @('default') }
     )
     UserProfileHT = [System.Collections.ArrayList]@()
     UserProfile = @(
@@ -311,8 +313,9 @@ $Global:Properties.UserInvertHT = $Global:Properties.UserInvertHT | Group-Object
 $Global:Properties.UserRole | ForEach-Object { [void]$Global:Properties.UserRoleHT.Add([PSCustomObject]$_); [void]$Global:Properties.UserRoleInvertHT.Add([PSCustomObject]$_); }
 $Global:Properties.UserRoleHT = $Global:Properties.UserRoleHT | Group-Object name -AsHashTable
 $Global:Properties.UserRoleInvertHT = $Global:Properties.UserRoleInvertHT | Group-Object displayName -AsHashTable
-$Global:Properties.UserParameter | ForEach-Object { [void]$Global:Properties.UserParameterHT.Add([PSCustomObject]$_) }
+$Global:Properties.UserParameter | ForEach-Object { [void]$Global:Properties.UserParameterHT.Add([PSCustomObject]$_); [void]$Global:Properties.UserParameterInvertHT.Add([PSCustomObject]$_); }
 $Global:Properties.UserParameterHT = $Global:Properties.UserParameterHT | Group-Object name -AsHashTable
+$Global:Properties.UserParameterInvertHT = $Global:Properties.UserParameterInvertHT | Group-Object displayName -AsHashTable
 $Global:Properties.UserProfile | ForEach-Object { [void]$Global:Properties.UserProfileHT.Add([PSCustomObject]$_) }
 $Global:Properties.UserProfileHT = $Global:Properties.UserProfileHT | Group-Object name -AsHashTable
 $Global:Properties.Role | ForEach-Object { [void]$Global:Properties.RoleHT.Add([PSCustomObject]$_) }
@@ -461,6 +464,9 @@ function Idm-UsersRead {
                         foreach($prop in $row) {
                             try { $table_obj[$Global:Properties.UserParameterHT[$prop.Metadata.Name].displayName] = $row.GetValue($prop.Metadata.Name) } catch { Log warn "User Parameters property [$($prop.Metadata.Name)] not defined in configuration, skipping" }
                         }
+
+                        $table_obj[$Global:Properties.UserParameterHT["ID"].displayName] = ("{0}.{1}" -f $table_obj[$Global:Properties.UserParameterHT["USERNAME"].displayName], $table_obj[$Global:Properties.UserParameterHT["PARID"].displayName])
+
                         [void]$Global:UserParameter.Add([PSCustomObject]$table_obj);
                     } 
 
@@ -1031,7 +1037,7 @@ function Idm-UserRolesCreate {
         [SAP.Middleware.Connector.IRfcTable]$roles = $userAddRole.GetTable("ACTIVITYGROUPS")
         
         #Add existing roles
-        foreach ($line in $UserRoles) {
+        foreach ($line in $userRoles) {
             $roles.Append()
             $roles.SetValue("AGR_NAME", $line.AGR_NAME) 
             $roles.SetValue("AGR_TEXT", $line.AGR_TEXT) 
@@ -1207,6 +1213,197 @@ function Idm-UserParametersRead {
         foreach($item in $Global:UserParameter) {            
             $item | Select-Object $displayProperties
         }
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserParametersCreate {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserParameter"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'create'
+            parameters = @(
+                $Global:Properties.$Class | Where-Object { $_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' } }  
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_CHANGE'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+
+        #Retrieve existing parameters
+        [SAP.Middleware.Connector.IRfcFunction]$bapiUserGetDetail = $repository.CreateFunction("BAPI_USER_GET_DETAIL")
+        $bapiUserGetDetail.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        $bapiUserGetDetail.Invoke($Global:Connection)
+
+        $userTable = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$userRows = $bapiUserGetDetail.GetTable("PARAMETER")
+
+        foreach ($row in $userRows) {
+            $obj = @{}
+            foreach($prop in $row) {
+                $obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            }
+            [void]$userTable.Add([PSCustomObject]$obj)
+        }
+        
+        #Provision new parameter
+        [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
+        $userUpdate.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        [SAP.Middleware.Connector.IRfcTable]$userUpdateTable = $userUpdate.GetTable("PARAMETER")
+        [SAP.Middleware.Connector.IRfcStructure]$userUpdateX = $userUpdate.GetStructure("PARAMETERX")
+        $userUpdateX.SetValue("PARID","X")
+        
+        #Add existing data
+        foreach ($line in $userTable) {
+            $userUpdateTable.Append()
+            foreach($prop in $line.PSObject.Properties) {
+                $userUpdateTable.SetValue($prop.Name, $prop.Value)     
+            }
+        }
+
+        #Add New data
+        $userUpdateTable.Append()
+        $rv = @{}
+        foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
+            $rv[$prop.Name] = $prop.Value
+            try { $field = $Global:Properties.UserParameterInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user role, skipping"}
+
+            if($field.Name -eq 'USERNAME') { continue }
+            $userUpdateTable.SetValue($field.name,$prop.Value)
+        }
+        
+        $userUpdate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userUpdate -Context $function
+        LogIO info $function
+
+        $rv['ID'] = ("{0}.{1}" -f $properties.($Global:Properties.UserParameterHT['USERNAME'].displayName), $properties.($Global:Properties.UserParameterHT['PARID'].displayName))
+
+        [PSCustomObject]$rv
+    }
+
+    Log info "Done"
+}
+
+function Idm-UserParametersDelete {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "UserParameter"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'delete'
+            parameters = @(
+                $Global:Properties.$Class | Where-Object { $_.options.Contains('key') -or $_.options.Contains('delete') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' } }  
+
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('delete') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'prohibited' }
+                }
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
+        
+        $properties = $function_params.Clone()
+
+        $function = 'BAPI_USER_CHANGE'
+        LogIO info $function -In @system_params -Properties $properties
+        $repository = $Global:Connection.Repository
+
+        #Retrieve existing parameters
+        [SAP.Middleware.Connector.IRfcFunction]$bapiUserGetDetail = $repository.CreateFunction("BAPI_USER_GET_DETAIL")
+        $bapiUserGetDetail.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        $bapiUserGetDetail.Invoke($Global:Connection)
+
+        $userTable = New-Object System.Collections.ArrayList
+        [SAP.Middleware.Connector.IRfcTable]$userRows = $bapiUserGetDetail.GetTable("PARAMETER")
+
+        foreach ($row in $userRows) {
+            $obj = @{}
+            foreach($prop in $row) {
+                $obj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            }
+            [void]$userTable.Add([PSCustomObject]$obj)
+        }
+        
+        #Provision new parameter
+        [SAP.Middleware.Connector.IRfcFunction]$userUpdate = $repository.CreateFunction($function)
+        $userUpdate.SetValue("USERNAME", $properties.($Global:Properties.UserRoleHT['USERNAME'].displayName))
+        [SAP.Middleware.Connector.IRfcTable]$userUpdateTable = $userUpdate.GetTable("PARAMETER")
+        [SAP.Middleware.Connector.IRfcStructure]$userUpdateX = $userUpdate.GetStructure("PARAMETERX")
+        $userUpdateX.SetValue("PARID","X")
+        
+        #Add existing data
+        foreach ($line in $userTable) {
+            #Remove parameter by skipping
+            if($line.PARID -eq $properties.($Global:Properties.UserParameterHT["PARID"].displayName)) { continue }
+            $userUpdateTable.Append()
+            foreach($prop in $line.PSObject.Properties) {
+                $userUpdateTable.SetValue($prop.Name, $prop.Value)     
+            }
+        }
+
+        $userUpdate.Invoke($Global:Connection)
+        Get-ReturnLog -Call $userUpdate -Context $function
+        LogIO info $function
+
+        $properties
     }
 
     Log info "Done"
