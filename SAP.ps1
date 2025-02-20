@@ -278,8 +278,8 @@ $Global:Properties = @{
         @{ displayName = 'ID'; name='ID'; options = @('default','key') }
         @{ displayName = 'Username'; name='USERNAME'; options = @('default','create','delete') }
         @{ displayName = 'PARID'; name='PARID'; options = @('default','create','delete') }
-        @{ displayName = 'PARVA'; name='PARVA'; options = @('default') }
-        @{ displayName = 'PARTXT'; name='PARTXT'; options = @('default') }
+        @{ displayName = 'PARVA'; name='PARVA'; options = @('default','create') }
+        @{ displayName = 'PARTXT'; name='PARTXT'; options = @('default','create') }
     )
     UserProfileHT = [System.Collections.ArrayList]@()
     UserProfile = @(
@@ -353,7 +353,7 @@ function Idm-UsersRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -535,7 +535,7 @@ function Idm-UserCreate {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -642,7 +642,7 @@ function Idm-UserUpdate {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -759,7 +759,7 @@ function Idm-UserLock {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -823,7 +823,7 @@ function Idm-UserUnlock {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -887,7 +887,7 @@ function Idm-UserDelete {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         $properties = $function_params.Clone()
@@ -928,7 +928,7 @@ function Idm-UserRolesRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -996,7 +996,7 @@ function Idm-UserRolesCreate {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -1106,7 +1106,7 @@ function Idm-UserRolesDelete {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -1192,7 +1192,7 @@ function Idm-UserParametersRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -1255,7 +1255,7 @@ function Idm-UserParametersCreate {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -1356,7 +1356,7 @@ function Idm-UserParametersDelete {
         $function_params   = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayName
         
@@ -1432,7 +1432,7 @@ function Idm-UserProfilesRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -1481,7 +1481,7 @@ function Idm-RolesRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -1546,7 +1546,7 @@ function Idm-ProfilesRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -1598,7 +1598,7 @@ function Idm-ParametersRead {
         $function_params = ConvertFrom-Json2 $FunctionParams
 
         # Setup Connection
-        $Global:Connection = Open-SAPConnection -SystemParams $system_params -FunctionParams $function_params
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
         
         $properties = $function_params.properties
 
@@ -1633,23 +1633,22 @@ function Idm-ParametersRead {
 
 function Open-SAPConnection {
     param (
-        $SystemParams,
-        $FunctionParams
+        $system_params,
+        $function_params
     )
     
     try {
-        Add-Type -Path "$($SystemParams.SAPdllDirectoryPath)\sapnco.dll"
-        Add-Type -Path "$($SystemParams.SAPdllDirectoryPath)\sapnco_utils.dll"
+        Add-Type -Path "$($system_params.SAPdllDirectoryPath)\sapnco.dll"
+        Add-Type -Path "$($system_params.SAPdllDirectoryPath)\sapnco_utils.dll"
 
         $cfgParams = New-Object SAP.Middleware.Connector.RfcConfigParameters
-        $cfgParams.Add("NAME", $SystemParams.Hostname)
-        $cfgParams.Add("ASHOST", $SystemParams.Hostname)
-        $cfgParams.Add("SYSID", $SystemParams.SysId)
-        $cfgParams.Add("SYSNR", $SystemParams.SysNr)
-        $cfgParams.Add("CLIENT", $SystemParams.Client)
-        $cfgParams.Add("USER", $SystemParams.Username)
-        $cfgParams.Add("PASSWD", $SystemParams.Password)
-
+        $cfgParams.Add("NAME", $system_params.Hostname)
+        $cfgParams.Add("ASHOST", $system_params.Hostname)
+        $cfgParams.Add("SYSID", $system_params.SysId)
+        $cfgParams.Add("SYSNR", $system_params.SysNr)
+        $cfgParams.Add("CLIENT", $system_params.Client)
+        $cfgParams.Add("USER", $system_params.Username)
+        $cfgParams.Add("PASSWD", $system_params.Password)
         [SAP.Middleware.Connector.RfcDestinationManager]::GetDestination($cfgParams)
     } catch {
         Log error $_
