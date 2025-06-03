@@ -16,7 +16,7 @@ function Idm-SystemInfo {
         [string] $ConnectionParams
     )
 
-    Log info "-Connection=$Connection -TestConnection=$TestConnection -Configuration=$Configuration -ConnectionParams='$ConnectionParams'"
+    Log verbose "-Connection=$Connection -TestConnection=$TestConnection -Configuration=$Configuration -ConnectionParams='$ConnectionParams'"
 
     if ($Connection) {
         @(
@@ -102,7 +102,7 @@ function Idm-SystemInfo {
         @()
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-OnUnload {
@@ -337,7 +337,7 @@ function Idm-UsersRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
     
     if ($GetMeta) {
@@ -368,7 +368,7 @@ function Idm-UsersRead {
         $displayProperties = $properties | ForEach-Object { $Global:Properties.UserHT[$_].displayName }
 
         if($Global:User.count -lt 1) {
-                Log info "Retrieving User List"
+                Log verbose "Retrieving User List"
                 $repository = $Global:Connection.Repository
                 [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('BAPI_USER_GETLIST')
                 $bapiFunctionCall.SetValue("WITH_USERNAME","X")
@@ -376,7 +376,7 @@ function Idm-UsersRead {
                 $bapiFunctionCall.Invoke($Global:Connection)
                 [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('USERLIST')
                 $i = $returnData.Count
-                Log info "Retrieving User Details"
+                Log verbose "Retrieving User Details"
 
                 foreach($item in $returnData) {
                     $obj = @{
@@ -496,7 +496,7 @@ function Idm-UsersRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserCreate {
@@ -508,7 +508,7 @@ function Idm-UserCreate {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
 
     if ($GetMeta) {
@@ -603,7 +603,7 @@ function Idm-UserCreate {
         LogIO info $function
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserUpdate {
@@ -615,7 +615,7 @@ function Idm-UserUpdate {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
 
     if ($GetMeta) {
@@ -720,7 +720,7 @@ function Idm-UserUpdate {
         LogIO info $function
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserLock {
@@ -732,7 +732,7 @@ function Idm-UserLock {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
 
     if ($GetMeta) {
@@ -784,7 +784,7 @@ function Idm-UserLock {
         LogIO info $function
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserUnlock {
@@ -796,7 +796,7 @@ function Idm-UserUnlock {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
 
     if ($GetMeta) {
@@ -848,7 +848,7 @@ function Idm-UserUnlock {
         LogIO info $function
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserDelete {
@@ -860,7 +860,7 @@ function Idm-UserDelete {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "User"
 
     if ($GetMeta) {
@@ -902,7 +902,7 @@ function Idm-UserDelete {
         LogIO info $function
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserRolesRead {
@@ -912,7 +912,7 @@ function Idm-UserRolesRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserRole"
     
     if ($GetMeta) {
@@ -956,7 +956,7 @@ function Idm-UserRolesRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserRolesCreate {
@@ -968,7 +968,7 @@ function Idm-UserRolesCreate {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserRole"
 
     if ($GetMeta) {
@@ -1066,7 +1066,7 @@ function Idm-UserRolesCreate {
         [PSCustomObject]$rv
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserRolesDelete {
@@ -1078,7 +1078,7 @@ function Idm-UserRolesDelete {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserRole"
 
     if ($GetMeta) {
@@ -1166,7 +1166,7 @@ function Idm-UserRolesDelete {
         $properties
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserParametersRead {
@@ -1176,7 +1176,7 @@ function Idm-UserParametersRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserParameter"
     
     if ($GetMeta) {
@@ -1215,7 +1215,7 @@ function Idm-UserParametersRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserParametersCreate {
@@ -1227,7 +1227,7 @@ function Idm-UserParametersCreate {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserParameter"
 
     if ($GetMeta) {
@@ -1316,7 +1316,7 @@ function Idm-UserParametersCreate {
         [PSCustomObject]$rv
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserParametersDelete {
@@ -1328,7 +1328,7 @@ function Idm-UserParametersDelete {
         [string] $FunctionParams
     )
 
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserParameter"
 
     if ($GetMeta) {
@@ -1406,7 +1406,7 @@ function Idm-UserParametersDelete {
         $properties
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-UserProfilesRead {
@@ -1416,7 +1416,7 @@ function Idm-UserProfilesRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "UserProfile"
     
     if ($GetMeta) {
@@ -1455,7 +1455,7 @@ function Idm-UserProfilesRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-RolesRead {
@@ -1465,7 +1465,7 @@ function Idm-RolesRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "Role"
     
     if ($GetMeta) {
@@ -1495,7 +1495,7 @@ function Idm-RolesRead {
 
         $displayProperties = $properties | ForEach-Object { $Global:Properties.RoleHT[$_].displayName }
 
-        Log info "Retrieving Role List"
+        Log verbose "Retrieving Role List"
         $repository = $Global:Connection.Repository
         [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall = $repository.CreateFunction('PRGN_ROLE_GETLIST')
         $bapiFunctionCall.SetValue("WITH_ROLENAME","X")
@@ -1520,7 +1520,7 @@ function Idm-RolesRead {
         } 
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-ProfilesRead {
@@ -1530,7 +1530,7 @@ function Idm-ProfilesRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "Profile"
     
     if ($GetMeta) {
@@ -1560,7 +1560,7 @@ function Idm-ProfilesRead {
 
         $displayProperties = $properties | ForEach-Object { $Global:Properties.ProfileHT[$_].displayName }
         
-        Log info "Retrieving Profile List"
+        Log verbose "Retrieving Profile List"
         $ret = Read-Table -destination $Global:Connection -QueryTable "USR10" -Fields $properties
         
         foreach($item in $ret) {
@@ -1572,7 +1572,7 @@ function Idm-ProfilesRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Idm-ParametersRead {
@@ -1582,7 +1582,7 @@ function Idm-ParametersRead {
         [string] $FunctionParams
     )
     
-    Log info "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
     $Class = "Parameter"
     
     if ($GetMeta) {
@@ -1612,7 +1612,7 @@ function Idm-ParametersRead {
 
         $displayProperties = $properties | ForEach-Object { $Global:Properties.ParameterHT[$_].displayName }
         
-        Log info "Retrieving Parameter List"
+        Log verbose "Retrieving Parameter List"
         $ret = Read-Table -destination $Global:Connection -QueryTable "TPARA" -Fields $properties
         
         foreach($item in $ret) {
@@ -1624,7 +1624,7 @@ function Idm-ParametersRead {
         }
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 #
@@ -1655,7 +1655,7 @@ function Open-SAPConnection {
         Write-Error $_
     }
 
-    Log info "Done"
+    Log verbose "Done"
 }
 
 function Get-ClassMetaData {
