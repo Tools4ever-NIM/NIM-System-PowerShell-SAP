@@ -164,9 +164,10 @@ $Global:Properties = @{
         @{ displayName = 'FULLNAME_X'; area = 'ADDRESS'; name='FULLNAME_X'; options = @() }
         @{ displayName = 'function'; area = 'ADDRESS'; name='FUNCTION'; options = @('create','update') }
         @{ displayName = 'GLOBAL_LOCK_STATE'; area = 'ISLOCKED'; name='GLOBAL_LOCK_STATE'; options = @('default') }
-        @{ displayName = 'vaild_to'; area = 'LOGONDATA'; name='GLTGB'; options = @('default','create','update') }
-        @{ displayName = 'valid_from'; area = 'LOGONDATA'; name='GLTGV'; options = @('default','create','update') }
+        @{ displayName = 'valid_to'; area = 'LOGONDATA'; name='GLTGB'; options = @('default','create','update','yyyyMMdd') }
+        @{ displayName = 'valid_from'; area = 'LOGONDATA'; name='GLTGV'; options = @('default','create','update','yyyyMMdd') }
         @{ displayName = 'scn_permit_sap_gui_checkbox'; area = 'SNC'; name='GUIFLAG'; options = @('default','create','update') }
+        @{ displayName = 'secure_network_communication'; area = 'SNC'; name='PNAME'; options = @('default','create','update') }
         @{ displayName = 'HOMECITYNO'; area = 'ADDRESS'; name='HOMECITYNO'; options = @() }
         @{ displayName = 'HOME_CITY'; area = 'ADDRESS'; name='HOME_CITY'; options = @() }
         @{ displayName = 'house'; area = 'ADDRESS'; name='HOUSE_NO'; options = @('default','create','update') }
@@ -203,7 +204,6 @@ $Global:Properties = @{
         @{ displayName = 'PCODE2_EXT'; area = 'ADDRESS'; name='PCODE2_EXT'; options = @() }
         @{ displayName = 'PCODE3_EXT'; area = 'ADDRESS'; name='PCODE3_EXT'; options = @() }
         @{ displayName = 'PERS_NO'; area = 'ADDRESS'; name='PERS_NO'; options = @() }
-        @{ displayName = 'secure_network_communication'; area = 'SNC'; name='PNAME'; options = @('default') }
         @{ displayName = 'POBOX_CTRY'; area = 'ADDRESS'; name='POBOX_CTRY'; options = @() }
         @{ displayName = 'postal_code'; area = 'ADDRESS'; name='POSTL_COD1'; options = @('default','create','update') }
         @{ displayName = 'POSTL_COD2'; area = 'ADDRESS'; name='POSTL_COD2'; options = @() }
@@ -305,6 +305,17 @@ $Global:Properties = @{
         @{ displayName = 'PARAMID'; name='PARAMID'; options = @('default','key') }
         @{ displayName = 'PARTEXT'; name='PARTEXT'; options = @('default') }
     )
+    EmpCommHT = [System.Collections.ArrayList]@()
+    EmpComm = @(
+        @{ displayName = 'EMPLOYEENUMBER'; name='EMPLOYEENUMBER'; options = @('default','key') }
+        @{ displayName = 'SUBTYPE'; name='SUBTYPE'; options = @('default','create') }
+        @{ displayName = 'LOCKINDIC'; name='LOCKINDIC'; options = @('default') }
+        @{ displayName = 'OBJECTID'; name='OBJECTID'; options = @('default') }
+        @{ displayName = 'VALIDITYBEGIN'; name='VALIDITYBEGIN'; options = @('default','create') }
+        @{ displayName = 'VALIDITYEND'; name='VALIDITYEND'; options = @('default','create') }
+        @{ displayName = 'COMMUNICATIONID'; name='COMMUNICATIONID'; options = @('default','create') }
+        @{ displayName = 'RECORDNR'; name='RECORDNR'; options = @('default') }
+    )
 }
 
 $Global:Properties.User | ForEach-Object { [void]$Global:Properties.UserHT.Add([PSCustomObject]$_); [void]$Global:Properties.UserInvertHT.Add([PSCustomObject]$_); }
@@ -324,11 +335,252 @@ $Global:Properties.Profile | ForEach-Object { [void]$Global:Properties.ProfileHT
 $Global:Properties.ProfileHT = $Global:Properties.ProfileHT | Group-Object name -AsHashTable
 $Global:Properties.Parameter | ForEach-Object { [void]$Global:Properties.ParameterHT.Add([PSCustomObject]$_) }
 $Global:Properties.ParameterHT = $Global:Properties.ParameterHT | Group-Object name -AsHashTable
+$Global:Properties.EmpComm | ForEach-Object { [void]$Global:Properties.EmpCommHT.Add([PSCustomObject]$_) }
+$Global:Properties.EmpCommHT = $Global:Properties.EmpCommHT | Group-Object name -AsHashTable
 
 $Global:User = [System.Collections.ArrayList]@()
 $Global:UserRole = [System.Collections.ArrayList]@()
 $Global:UserParameter = [System.Collections.ArrayList]@()
 $Global:UserProfile = [System.Collections.ArrayList]@()
+
+function Idm-EmpCommsRead {
+    param (
+        [switch] $GetMeta,
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+    
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "EmpComm"
+    
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        Get-ClassMetaData -Class $Class
+    } else {
+        #
+        # Execute function
+        #
+        $system_params   = ConvertFrom-Json2 $SystemParams
+        $function_params = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Global:Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
+        $repository = $Global:Connection.Repository
+
+        $properties = $function_params.properties
+
+        if ($properties.length -eq 0) {
+            $properties = ($Global:Properties.$Class | Where-Object { $_.options.Contains('default') }).name
+        }
+        
+        # Assure key is the first column
+        $key = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).name
+        $properties = @($key) + @($properties | Where-Object { $_ -ne $key })
+
+        $displayProperties = $properties | ForEach-Object { $Global:Properties.EmpCommHT[$_].displayName }
+
+        log verbose "Retrieving Employee Numbers"
+        $employeeListFunction = $repository.CreateFunction("BAPI_EMPLOYEE_GETLIST")  # Load the function
+        $employeeListFunction.SetValue( "SUR_NAME_SEARK", '*')
+
+        # Invoke the function to retrieve employee numbers
+        $employeeListFunction.Invoke($Global:Connection)
+
+        # Retrieve Employee Numbers
+        $employeeNumbersTable = $employeeListFunction.GetTable("EMPLOYEE_LIST")
+        log debug ('Pulled Employee Count: {0}' -f $employeeNumbersTable.count)
+
+        $employeeNumbers = @()  # Initialize an array to store Employee Numbers
+
+        if ($employeeNumbersTable.RowCount -gt 0) {
+            foreach ($row in $employeeNumbersTable) {
+                $employeeNumber = $row.GetValue("PERNR")
+                $employeeNumbers += $employeeNumber  # Store for later use
+            }
+        }
+
+        Log debug "Retrieving EmpComm Details"
+        $i = $employeeNumbers.Count
+
+        foreach($employeeNumber in $employeeNumbers) {
+            $bapiFunctionCall = $repository.CreateFunction('BAPI_EMPLCOMM_GETLIST')
+            $bapiFunctionCall.SetValue("EMPLOYEENUMBER", $employeeNumber)
+            $bapiFunctionCall.Invoke($Global:Connection)
+            # Skip if no Comm records associated with the Personel Number
+            if( 'E' -ne $bapiFunctionCall.GetStructure('RETURN').GetValue('TYPE') ) {
+                [SAP.Middleware.Connector.IRfcTable]$returnData = $bapiFunctionCall.GetTable('INTCONTROLKEY')
+
+                # Valid Comm, pull CommID
+                foreach($item in $returnData) {
+                    [SAP.Middleware.Connector.IRfcFunction]$bapiFunctionCall2 = $repository.CreateFunction('BAPI_EMPLCOMM_GETDETAIL')
+                    $bapiFunctionCall2.SetValue("EMPLOYEENUMBER",$item.GetValue("EMPLOYEENO"))
+                    $bapiFunctionCall2.SetValue("SUBTYPE",$item.GetValue("SUBTYPE"))
+                    $bapiFunctionCall2.SetValue("OBJECTID",$item.GetValue("OBJECTID"))
+                    $bapiFunctionCall2.SetValue("LOCKINDICATOR",$item.GetValue("LOCKINDIC"))
+                    $bapiFunctionCall2.SetValue("VALIDITYBEGIN",( $item.GetValue("VALIDBEGIN") -replace '-' ) )
+                    $bapiFunctionCall2.SetValue("VALIDITYEND",( $item.GetValue("VALIDEND") -replace '-' ) )
+                    $bapiFunctionCall2.SetValue("RECORDNUMBER",$item.GetValue("RECORDNR"))
+                    $bapiFunctionCall2.Invoke($Global:Connection)
+                    $returnData2 = $bapiFunctionCall2.GetStructure("RETURN")
+
+                    # Check if the call was successful
+                    if ($returnData2.GetValue("TYPE") -eq "S" -or $returnData2.GetValue("TYPE") -eq "") {
+                        # Get communication data
+                        $communicationId = $bapiFunctionCall2.GetValue("COMMUNICATIONID")
+                    } else {
+                        $errorMessage = $returnData2.GetValue("MESSAGE")
+                        Log Error "Error: $errorMessage"
+                    }
+                    $obj = [ordered] @{
+                        'EMPLOYEENUMBER'    = $item.GetValue("EMPLOYEENO")
+                        'SUBTYPE'           = $item.GetValue("SUBTYPE")
+                        'LOCKINDIC'         = $item.GetValue("LOCKINDIC")
+                        'OBJECTID'          = $item.GetValue("OBJECTID")
+                        'VALIDITYBEGIN'     = $item.GetValue("VALIDBEGIN")
+                        'VALIDITYEND'       = $item.GetValue("VALIDEND")
+                        'COMMUNICATIONID'   = $communicationId
+                        'RECORDNR'          = $item.GetValue("RECORDNR")
+                    }
+                    
+                    $ret = ([PSCustomObject]$obj) | Select-Object $displayProperties
+                    
+                    $ret
+                }
+            }
+            if(($i -= 1) % 500 -eq 0) {
+                Log debug ("$($i) remaining EmpComm details to retrieve")
+            }
+        }
+        
+    }
+
+    Log verbose "Done"
+}
+
+function Idm-EmpCommCreate {
+    param (
+        # Operations
+        [switch] $GetMeta,
+        # Parameters
+        [string] $SystemParams,
+        [string] $FunctionParams
+    )
+
+    Log verbose "-GetMeta=$GetMeta -SystemParams='$SystemParams' -FunctionParams='$FunctionParams'"
+    $Class = "EmpComm"
+
+    if ($GetMeta) {
+        #
+        # Get meta data
+        #
+        @{
+            semantics = 'create'
+            <# Fields:
+                @employee_number Personnel number of the HR record to have the CommunicationID set on it.
+                @sub_type The Subtype to use, typically 0001.
+                @validity_begin The Start date to use.
+                @validity_end The End date to use.
+                @communication_id The ID to specify.  This should match the SAP User Name for the user.  OR:  AD sAMAccountName
+            #>
+            parameters = @(
+                @{ name = 'EMPLOYEENUMBER'; allowance = 'mandatory' }
+                @{ name = 'SUBTYPE'; allowance = 'mandatory' }
+                @{ name = 'VALIDITYBEGIN'; allowance = 'mandatory' } 
+                @{ name = 'VALIDITYEND'; allowance = 'mandatory' } 
+                @{ name = 'COMMUNICATIONID'; allowance = 'mandatory' }
+                @{ name = '*'; allowance = 'prohibited'}
+            )
+        }
+    }
+    else {
+        #
+        # Execute function
+        #
+
+        $system_params = ConvertFrom-Json2 $SystemParams
+        $function_params   = ConvertFrom-Json2 $FunctionParams
+
+        # Setup Connection
+        $Connection = Open-SAPConnection -system_params $system_params -function_params $function_params
+        $repository = $Connection.Repository
+
+        # Lock to a single session
+        [SAP.Middleware.Connector.RfcSessionManager]::BeginContext($Connection)
+        
+        # Prepare Function Call
+        # Prepare Variables
+        $personnelNumber = $function_params.EMPLOYEENUMBER
+        $communicationId = $function_params.COMMUNICATIONID
+        $validityBegin = ( Get-Date $function_params.VALIDITYBEGIN -format 'yyyyMMdd' )
+        $validityEnd = ( Get-Date $function_params.VALIDITYEND -format 'yyyyMMdd' )
+        $subtype = $function_params.SUBTYPE
+
+        # Step 1: Lock the employee
+        $enqueueFunction = $repository.CreateFunction("BAPI_EMPLOYEE_ENQUEUE")
+        $enqueueFunction.SetValue("NUMBER", $personnelNumber)
+        $enqueueFunction.Invoke($Connection)
+        $enqueueReturn = $enqueueFunction.GetStructure("RETURN")
+        Get-ReturnLog -Call $enqueueFunction -Context $enqueueFunction.Metadata.Name
+        if ($enqueueReturn.GetValue("TYPE") -eq "E") {
+            LogIO error -out $MyInvocation.MyCommand.Name ("Error locking employee: " + $enqueueReturn.GetValue("MESSAGE") )
+            throw $enqueueReturn.GetValue("MESSAGE")
+        } else {
+            logio debug $MyInvocation.MyCommand.Name -out "Employee $personnelNumber locked successfully."
+        }
+
+        # Step 2: Call BAPI_EMPLCOMM_CREATE to add CommunicationID
+        $empCommCreateFunction = $repository.CreateFunction("BAPI_EMPLCOMM_CREATE")
+        $empCommCreateFunction.SetValue("EMPLOYEENUMBER", $personnelNumber)
+        $empCommCreateFunction.SetValue("SUBTYPE", $subtype)
+        $empCommCreateFunction.SetValue("VALIDITYBEGIN", $validityBegin)
+        $empCommCreateFunction.SetValue("VALIDITYEND", $validityEnd)
+        $empCommCreateFunction.SetValue("COMMUNICATIONID", $communicationId)
+
+        # Execute the BAPI
+        $empCommCreateFunction.Invoke($Connection)
+
+        # Check the return structure for success or errors
+        $empCommCreateReturn = $empCommCreateFunction.GetStructure("RETURN")
+        Get-ReturnLog -Call $empCommCreateFunction -Context $empCommCreateFunction.Metadata.Name
+        if ($empCommCreateReturn.GetValue("TYPE") -eq "E") {
+            LogIO error $MyInvocation.MyCommand.Name -out ( "Error creating communication: " + $empCommCreateReturn.GetValue("MESSAGE") )
+        } else {
+            LogIO info $MyInvocation.MyCommand.Name -out  "CommunicationID $communicationId added successfully for employee $personnelNumber."
+        }
+        
+        # Step 3: Commit the transaction
+        $commitFunction = $repository.CreateFunction("BAPI_TRANSACTION_COMMIT")
+        $commitFunction.SetValue("WAIT", "X")  # Wait for commit confirmation
+        $commitFunction.Invoke($Connection)
+        Get-ReturnLog -Call $commitFunction -Context $commitFunction.Metadata.Name
+        $commitReturn = $commitFunction.GetStructure("RETURN")
+        if ($commitReturn.GetValue("TYPE") -eq "E") {
+            LogIO error $MyInvocation.MyCommand.Name -out ( "Error Committing Transaction: " + $commitReturn.GetValue("MESSAGE") )
+        } else {
+            LogIO info $MyInvocation.MyCommand.Name -out "Transaction Committed successfully for employee $personnelNumber."
+        }
+        
+        # Step 4: Unlock the employee
+        $dequeueFunction = $repository.CreateFunction("BAPI_EMPLOYEE_DEQUEUE")
+        $dequeueFunction.SetValue("NUMBER", $personnelNumber)
+        $dequeueFunction.Invoke($Connection)
+        Get-ReturnLog -Call $dequeueFunction -Context $dequeueFunction.Metadata.Name
+        $dequeueReturn = $dequeueFunction.GetStructure("RETURN")
+        if ($dequeueReturn.GetValue("TYPE") -eq "E") {
+            logIO error $MyInvocation.MyCommand.Name -out ( "Error unlocking employee: " + $dequeueReturn.GetValue("MESSAGE") )
+        } else {
+            logIO info $MyInvocation.MyCommand.Name -out "Employee $personnelNumber unlocked successfully."
+        }
+
+        # End Session
+        [SAP.Middleware.Connector.RfcSessionManager]::EndContext($Connection)
+
+    }
+
+    Log verbose "Done"
+}
 
 function Idm-UsersRead {
     param (
@@ -482,7 +734,7 @@ function Idm-UsersRead {
                         [void]$Global:UserProfile.Add([PSCustomObject]$table_obj);
                     } 
                     
-                    if(($i -= 1) % 100 -eq 0) {
+                    if(($i -= 1) % 500 -eq 0) {
                         Log debug ("$($i) remaining user details to retrieve")
                     }
                     
@@ -523,6 +775,9 @@ function Idm-UserCreate {
                 $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('create') } | ForEach-Object {
                     @{ name = $_.displayName; allowance = 'prohibited' }
                 }
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and $_.options.Contains('create') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'optional' }
+                }
             )
         }
     }
@@ -554,13 +809,24 @@ function Idm-UserCreate {
         [SAP.Middleware.Connector.IRfcStructure]$userUClass = $userCreate.GetStructure("UCLASS")
 
         foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
-            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
+            try { 
+                $field = $Global:Properties.UserInvertHT[$prop.Name] 
+            } catch { 
+                throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"
+            }
 
             if($prop.Name -eq $key) {
                 $userCreate.SetValue($field.name,$prop.Value)
                 continue
             }
             
+            #Datetime Fields
+            # Format to YYYYMMDD format.
+            $t = [datetime]::MinValue
+            if( $field.options -contains 'yyyyMMdd' -AND [datetime]::TryParse($prop.value,[ref]$t) ) {
+                $prop.value = (Get-Date $prop.value -Format 'yyyyMMdd')
+            }
+
             #Check for Password Fields
             if($field.name -in @('BAPIPWD','CODVN')) {
 
@@ -570,9 +836,6 @@ function Idm-UserCreate {
                     #Parse Outside of switch     
                     {$_ -in @('BAPIPWD','CODVN')} { continue }
                     
-                    #Datetime Fields
-                    # Maybe needed for GLTGV and GLTGB
-
                     #Boolean Fields
                     {$_ -eq 'SNC' -and $field.name -eq 'GUIFLAG'} { $userSNC.SetValue('GUIFLAG',$prop.Value)}
                     
@@ -590,8 +853,11 @@ function Idm-UserCreate {
             }
         }
 
+        # Parse Logon Dates
+
+
         #Parse password Options
-        if($user.disable_password) {
+        if($properties.disable_password) {
             $userLogonData.SetValue('CODVN','X')
             $userPassword.SetValue('BAPIPWD','')
         } else {
@@ -627,9 +893,10 @@ function Idm-UserUpdate {
             parameters = @(
                 @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
 
-                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('create') } | ForEach-Object {
-                    @{ name = $_.displayName; allowance = 'prohibited' }
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and $_.options.Contains('update') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'optional' }
                 }
+                @{ name = '*'; allowance = 'prohibited' }
             )
         }
     }
@@ -672,13 +939,20 @@ function Idm-UserUpdate {
         [SAP.Middleware.Connector.IRfcStructure]$userUClassX = $userUpdate.GetStructure("UCLASSX")
 
         foreach($prop in ([PSCustomObject]$properties).PSObject.properties) {
-            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user create, skipping"}
+            try { $field = $Global:Properties.UserInvertHT[$prop.Name] } catch { throw "[$($prop.Name)] does not have a connector mapping for user update, skipping"}
 
             if($prop.Name -eq $key) {
                 $userUpdate.SetValue($field.name,$prop.Value)
                 continue
             }
             
+            #Datetime Fields
+            # Format to YYYYMMDD format.
+            $t = [datetime]::MinValue
+            if( $field.options -contains 'yyyyMMdd' -AND [datetime]::TryParse($prop.value,[ref]$t) ) {
+                $prop.value = (Get-Date $prop.value -Format 'yyyyMMdd')
+            }
+
             #Check for Password Fields
             if($field.name -in @('BAPIPWD','CODVN')) {
 
@@ -705,13 +979,13 @@ function Idm-UserUpdate {
         }
 
         #Parse password Options
-        if($user.disable_password) {
+        if($properties.disable_password) {
             $userLogonData.SetValue('CODVN','X')
             $userLogonDataX.SetValue('CODVN','X')
             $userPassword.SetValue('BAPIPWD','')
             $userPasswordX.SetValue('BAPIPWD','X')
-        } elseif ($user.BAPIPWD.length -gt 0) {
-            $userPassword.SetValue('BAPIPWD',$Properties.BAPIPWD)
+        } elseif ($properties.BAPIPWD.length -gt 0) {
+            $userPassword.SetValue('BAPIPWD',$properties.BAPIPWD)
             $userPasswordX.SetValue('BAPIPWD','X')
         }
         
@@ -744,9 +1018,11 @@ function Idm-UserLock {
             parameters = @(
                 @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
 
-                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('lock') } | ForEach-Object {
-                    @{ name = $_.displayName; allowance = 'prohibited' }
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and $_.options.Contains('lock') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' }
                 }
+
+                @{ name = '*'; allowance = 'prohibited' }
             )
         }
     }
@@ -808,9 +1084,11 @@ function Idm-UserUnlock {
             parameters = @(
                 @{ name = ($Global:Properties.$Class | Where-Object { $_.options.Contains('key') }).displayname; allowance = 'mandatory' }
 
-                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and !$_.options.Contains('lock') } | ForEach-Object {
-                    @{ name = $_.displayName; allowance = 'prohibited' }
+                $Global:Properties.$Class | Where-Object { !$_.options.Contains('key') -and $_.options.Contains('unlock') } | ForEach-Object {
+                    @{ name = $_.displayName; allowance = 'mandatory' }
                 }
+                @{ name = '*'; allowance = 'prohibited' }
+
             )
         }
     }
@@ -1825,22 +2103,39 @@ function Get-ReturnLog {
         $Context
     )
     #Get Return Table
-    $table = $Call.GetTable("RETURN")  
+    $table = $Call.GetValue("RETURN")  
+    if( $table.GetType().Name -eq 'RfcTable' ) {
+        foreach($row in $table) {
+            $rowObj = [ordered]@{}
+            foreach($prop in $row) {
+                $rowObj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            }
 
-    foreach($row in $table) {
-        $rowObj = @{}
-        foreach($prop in $row) {
-            $rowObj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            $type = "info"
+            if($rowObj.Type -eq 'E') { 
+                $type = "error"
+                Log error $rowObj.MESSAGE
+            }
+
+            LogIO $type $Context -Out $rowObj
         }
+    } elseif ( $table.GetType().Name -eq 'RfcStructure' ) {
+            $row = $table
+            $rowObj = [ordered]@{}
+            foreach($prop in $row) {
+                $rowObj[$prop.Metadata.Name] = $row.GetValue($prop.Metadata.Name)
+            }
 
-        $type = "info"
-        if($rowObj.Type -eq 'E') { 
-            $type = "error"
-            Log error $rowObj.MESSAGE
-        }
+            $type = "info"
+            if($rowObj.Type -eq 'E') { 
+                $type = "error"
+                Log error $rowObj.MESSAGE
+            }
 
-        LogIO $type $Context -Out $rowObj
-    } 
+            LogIO $type $Context -Out $rowObj
+    } else {
+        logIO 'Warning' $Context 'No RETURN Object'
+    }
 }
     
 #
@@ -1880,7 +2175,7 @@ rst_name","field_type":"string","include":true,"field_format":"","field_source":
 g","include":true,"field_format":"","field_source":"data","javascript":"","ref_col":[],"reference":f
 alse,"ref_col_fields":[]},{"field_name":"GLOBAL_LOCK_STATE","field_type":"string","include":true,"fi
 eld_format":"","field_source":"data","javascript":"","ref_col":[],"reference":false,"ref_col_fields"
-:[]},{"field_name":"vaild_to","field_type":"string","include":true,"field_format":"","field_source":
+:[]},{"field_name":"valid_to","field_type":"string","include":true,"field_format":"","field_source":
 "data","javascript":"","ref_col":[],"reference":false,"ref_col_fields":[]},{"field_name":"valid_from
 ","field_type":"string","include":true,"field_format":"","field_source":"data","javascript":"","ref_
 col":[],"reference":false,"ref_col_fields":[]},{"field_name":"scn_permit_sap_gui_checkbox","field_ty
